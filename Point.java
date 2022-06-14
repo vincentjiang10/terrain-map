@@ -3,7 +3,7 @@ public class Point {
     private double x;
     private double y;
     private double z;
-    
+
     // Constructor
     public Point(double x, double y, double z) {
         this.x = x;
@@ -23,7 +23,14 @@ public class Point {
         return z;
     }
 
-    // sets default coordinates of matrix
+    // Sets new x, y, and z coordinates
+    public void set(double x, double y, double z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+    // Sets default coordinates of matrix
     public static void setMatrix(Point[][] mat) {
         int shift = (mat.length-1)/2;
         for (int i = 0; i < mat.length; i++) {
@@ -32,5 +39,4 @@ public class Point {
             }
         }
     }
-    // have a getColor() function
 }

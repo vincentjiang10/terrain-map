@@ -10,17 +10,20 @@ public class TerrainMap {
     private final static String[] COLORS = {"Gray = 0", "Red = 1", "Green = 2", "Blue = 3"};
     private final static String[] MAP_TYPES = {"Points = 0", "Mesh = 1", "Terrain = 2"};
     private final static int MAX_SIZE = 10;
-    private static double theta = 45;
+    public static int terType;
+    public static int size;
+    public static int color;
+    public static int mapType;
+    // Default angle
+    private static double theta = 45; // correspond to rotation about z-axis
     // Default perspective
     public static Point persp = new Point(1,1,0);
-
-    // remember to add stdIn and user input
+    
+    // Returns theta
+    public static double getTheta() {
+        return theta;
+    }
     public static void main(String[] args) throws Exception {
-        int terType = -1;
-        int size = -1;
-        int color = -1;
-        int mapType = -1;
-        
         int len = args.length;
         // Maybe ask question to filter whether user wants to run on command line or GUI
         if (len == 0) {
@@ -84,13 +87,17 @@ public class TerrainMap {
         }
         else throw new Exception("Number of arguments is not equal to " + NUM_ARGS);
 
-        // TODO: delete
-        System.out.println(terType);
-        System.out.println(size);   
-        System.out.println(color);
-        System.out.println(mapType);
+        // Map info to console
+        System.out.println("\nPrinting map information... ");
+        String a0 = TER_TYPES[terType];
+        System.out.println("Terrain type: " + a0.substring(0, a0.length()-4));
+        System.out.println("Terrain dimensions: " + size + " by " + size);   
+        String a2 = COLORS[color];
+        System.out.println("Color gradient: " + a2.substring(0,a2.length()-4));
+        String a3 = MAP_TYPES[mapType];
+        System.out.println("Map type: " + a3.substring(0, a3.length()-4));
 
-        // will be used as argument for several classes (which can also have scanners asking for certain variables)
+        // Will be used as argument for several classes (which can also have scanners asking for certain variables)
         Point[][] mat = new Point[size][size];
         Point.setMatrix(mat);
 
@@ -99,16 +106,23 @@ public class TerrainMap {
             md.setMatrix(mat);
         }
 
-        // rotate by theta ccw about z-axis
-
         StdDraw.setCanvasSize(1200, 800);
 
-        // setting scale
-        StdDraw.setXscale(-0.75*size, 0.75*size);
-        StdDraw.setYscale(-0.3*size, 0.3*size);
+        // Setting scale
+        StdDraw.setXscale(-size, size);
+        StdDraw.setYscale(-0.5*size, 0.5*size);
 
-        // setting color
+        // Setting rotation
+        // Rotate by theta ccw about z-axis (call on Rotate)
+
+        // Setting color (upon running program)
         Display.setColor(color);
+
+        // Setting perspective (upon running program)
+        Display.setPerp(persp);
+
+        // Setting pen radius (dependent on size)
+        StdDraw.setPenRadius(1.0/(size*20));
 
         StdDraw.enableDoubleBuffering();
         StdDraw.clear();
