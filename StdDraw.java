@@ -641,6 +641,11 @@ public final class StdDraw implements ActionListener, MouseListener, MouseMotion
         init();
     }
 
+    /** Returns the JFrame frame */
+    public static JFrame getFrame() {
+        return frame;
+    }
+
     /**
      * Sets the canvas (drawing area) to be 512-by-512 pixels.
      * This also erases the current drawing and resets the coordinate system,
@@ -730,7 +735,7 @@ public final class StdDraw implements ActionListener, MouseListener, MouseMotion
         menuItem1.addActionListener(std);
         // Java 10+: replace getMenuShortcutKeyMask() with getMenuShortcutKeyMaskEx()
         menuItem1.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
-                                Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                                Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         menu.add(menuItem1);
         return menuBar;
     }

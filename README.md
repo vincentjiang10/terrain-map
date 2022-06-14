@@ -3,8 +3,8 @@
 include picture of standard perspective and default position
 
 ### Prerequisites
-Thinking of using stdDraw library
-TODO: research more about stdDraw library so you can add on to the description and what it utilizes (java swing, etc)
+This project implements the StdDraw library (https://introcs.cs.princeton.edu/java/stdlib/javadoc/StdDraw.html), which uses built-in java libraries like java.awt and javax.swing. 
+NOTE: StdDraw library is slightly modified to return abstracted JFrame (getFrame())
 
 ### Running the Program
 Add option to use args[] or stdin

@@ -1,7 +1,7 @@
 import java.util.Scanner;
 
 public class MidpointDisplacement {
-    // field standing for deviation
+    // Deviation: used in noise generation and randomness
     private int dev;
 
     public void setMatrix(Point[][] mat) {
