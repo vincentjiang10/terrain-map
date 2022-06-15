@@ -29,7 +29,7 @@ Include picture of standard perspective and default position
 ### Before Running the Program
 #### Prerequisites
 This project implements the StdDraw library (https://introcs.cs.princeton.edu/java/stdlib/javadoc/StdDraw.html), which uses built-in java libraries like java.awt and javax.swing. 
-NOTE: StdDraw library has been slightly modified to return abstracted JFrame (getFrame())
+NOTE: StdDraw library has been slightly modified to return abstracted JFrame (StdDraw.getFrame())
 #### Note
 - Only gray, red, green, and blue can be set as pen color when running TerrainMap.java in console/terminal. Other colors will be available on the GUI.
 
