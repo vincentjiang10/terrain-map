@@ -1,27 +1,36 @@
 import java.util.Arrays;
 import java.util.Scanner;
-import java.awt.*;
-import javax.swing.JFrame;
 
+/**
+ * Console interaction - only generates one map based on supplied arguments
+ */
 public class TerrainMap {
-    private final static int NUM_ARGS = 4;
+    final static int NUM_ARGS = 5;
     // use enum?
-    private final static String[] TER_TYPES = {"Midpoint Displacement = 0", "Cellular Automata = 1", "Diamond Square = 2", "Perlin Noise = 3"};
-    private final static String[] COLORS = {"Gray = 0", "Red = 1", "Green = 2", "Blue = 3"};
-    private final static String[] MAP_TYPES = {"Points = 0", "Mesh = 1", "Terrain = 2"};
-    private final static int MAX_SIZE = 10;
-    public static int terType;
-    public static int size;
-    public static int color;
-    public static int mapType;
+    final static String[] TER_TYPES = {"Midpoint Displacement = 0", "Cellular Automata = 1", "Diamond Square = 2", "Perlin Noise = 3"};
+    final static String[] COLORS = {"Gray = 0", "Red = 1", "Green = 2", "Blue = 3"};
+    final static String[] MAP_TYPES = {"Points = 0", "Mesh = 1", "Terrain = 2"};
+    final static int MAX_SIZE = 10;
+    final static int MAX_DEV = 10;
     // Default angle
-    private static double theta = 45; // correspond to rotation about z-axis
+    final static double theta = 45; // correspond to rotation about z-axis
+    // Default luminance
+    final static double lum = 0.5;
+    // TODO: doesn't quite work (figure out before implementing rotation)
     // Default perspective
-    public static Point persp = new Point(1,1,0);
+    final static Point persp = new Point(0,1,1);
+
+    private static int terType;
+    private static int size;
+    private static int color;
+    private static int mapType;
+    private static int dev;
     
-    // Returns theta
-    public static double getTheta() {
-        return theta;
+    // Either throws an exception (in the case of args containing non-int elements) or prints due to invalid user input read by scanner
+    public static void invalid(String arg, int limit, boolean isThrow) throws Exception {
+        String msg = "Invalid: " + arg + " input must be a nonnegatibe integer from 0 to " + limit + " inclusive";
+        if (isThrow) throw new Exception("Invalid: " + arg + " input must be a nonnegatibe integer from 0 to " + limit + " inclusive");
+        System.out.println(msg);
     }
     public static void main(String[] args) throws Exception {
         int len = args.length;
@@ -34,52 +43,76 @@ public class TerrainMap {
                     if (arg.equals("First")) {
                         System.out.print("Enter map type " + Arrays.toString(TER_TYPES) + ": ");
                         terType = sc.nextInt();
-                        if (terType < 0 || terType >= TER_TYPES.length) throw new Exception();
+                        if (terType < 0 || terType > TER_TYPES.length-1) {
+                            invalid(arg, TER_TYPES.length-1, false);
+                            continue;
+                        }
                         arg = "Second";
                         System.out.println("Enter map size (2^n+1 by 2^n+1)");
                     }
                     if (arg.equals("Second")) {
                         System.out.print("Size (0 <= n <= " + MAX_SIZE + "): " );
                         size = sc.nextInt();
-                        if (size < 0 || size > MAX_SIZE) throw new Exception();
+                        if (size < 0 || size > MAX_SIZE) {
+                            invalid(arg, MAX_SIZE, false);
+                            continue;
+                        }
                         size = (int) Math.pow(2, size) + 1;
                         arg = "Third";
                     }
                     if (arg.equals("Third")) {
                         System.out.print("Color: " + Arrays.toString(COLORS) + ": ");
                         color = sc.nextInt();
-                        if (color < 0 || color >= COLORS.length) throw new Exception();
+                        if (color < 0 || color > COLORS.length-1) {
+                            invalid(arg, COLORS.length-1, false);
+                            continue;
+                        }
                         arg = "Fourth";
                     }
                     if (arg.equals("Fourth")) {
                         System.out.print("Map display: " + Arrays.toString(MAP_TYPES) + ": ");
                         mapType = sc.nextInt();
-                        if (mapType < 0 || mapType >= MAP_TYPES.length) throw new Exception();
+                        if (mapType < 0 || mapType > MAP_TYPES.length-1) {
+                            invalid(arg, MAP_TYPES.length-1, false);
+                            continue;
+                        }
+                        arg = "Fifth";
+                    }
+                    if (arg.equals("Fifth")) {
+                        System.out.print("Deviation (0 <= dev <= " + MAX_DEV + "): ");
+                        dev = sc.nextInt();
+                        if (dev < 0 || dev > MAX_DEV) {
+                            invalid(arg, MAX_DEV, false);
+                            continue;
+                        }
                         break;
                     }
                 }
                 catch (Exception e) {
-                    System.out.println(arg + " input invalid, try again");
+                    System.out.println("Invalid: " + arg + " input must be a nonnegative integer");
                     sc.nextLine();
                 }
             }
             sc.close();
         }
         else if (len == NUM_ARGS) {
-            String arg = "first";
+            String arg = "First";
             try {
                 terType = Integer.parseInt(args[0]);
-                if (terType < 0 || terType >= TER_TYPES.length) throw new Exception("Invalid: first input must be a nonnegative integer from 0 to " + (TER_TYPES.length-1));
-                arg = "second";
+                if (terType < 0 || terType > TER_TYPES.length-1) invalid(arg, TER_TYPES.length-1, true);
+                arg = "Second";
                 size = Integer.parseInt(args[1]);
-                if (size < 0 || size > MAX_SIZE) throw new Exception("Invalid: second input must be a nonnegative integer from 0 to " + MAX_SIZE);
+                if (size < 0 || size > MAX_SIZE) invalid(arg, MAX_SIZE, true);
                 size = (int) Math.pow(2, size) + 1;
-                arg = "third";
+                arg = "Third";
                 color = Integer.parseInt(args[2]);
-                if (color < 0 || color >= COLORS.length) throw new Exception("Invalid: third input must be a nonnegatibe integer from 0 to " + (COLORS.length-1));
-                arg = "fourth";
+                if (color < 0 || color > COLORS.length-1) invalid(arg, COLORS.length-1, true);
+                arg = "Fourth";
                 mapType = Integer.parseInt(args[3]);
-                if (mapType < 0 || mapType >= MAP_TYPES.length) throw new Exception("Invalid: fourth input must be a nonnegatibe integer from 0 to " + (MAP_TYPES.length-1));
+                if (mapType < 0 || mapType > MAP_TYPES.length-1) invalid(arg, MAP_TYPES.length-1, true);
+                arg = "Fifth";
+                dev = Integer.parseInt(args[4]);
+                if (dev < 0 || dev > MAX_DEV) invalid(arg, MAX_DEV, true);
             }
             catch (NumberFormatException e) {
                 throw new Exception("Invalid: " + arg + " input must be a nonnegative integer");
@@ -87,7 +120,8 @@ public class TerrainMap {
         }
         else throw new Exception("Number of arguments is not equal to " + NUM_ARGS);
 
-        // Map info to console
+        // Map info to console (TODO: may be altered into method that can be used by GUI)
+        // A single function containing map info that can be called in this class and in GUI class
         System.out.println("\nPrinting map information... ");
         String a0 = TER_TYPES[terType];
         System.out.println("Terrain type: " + a0.substring(0, a0.length()-4));
@@ -96,32 +130,37 @@ public class TerrainMap {
         System.out.println("Color gradient: " + a2.substring(0,a2.length()-4));
         String a3 = MAP_TYPES[mapType];
         System.out.println("Map type: " + a3.substring(0, a3.length()-4));
+        System.out.println("Deviation: " + dev);
 
         // Will be used as argument for several classes (which can also have scanners asking for certain variables)
         Point[][] mat = new Point[size][size];
         Point.setMatrix(mat);
 
         if (terType == 0) {
-            MidpointDisplacement md = new MidpointDisplacement();
-            md.setMatrix(mat);
+            MidpointDisplacement.setDev(dev/10.0);
+            MidpointDisplacement.setMatrix(mat);
         }
 
+        // Setting canvas size
         StdDraw.setCanvasSize(1200, 800);
 
         // Setting scale
         StdDraw.setXscale(-size, size);
         StdDraw.setYscale(-0.5*size, 0.5*size);
 
-        // Setting rotation
-        // Rotate by theta ccw about z-axis (call on Rotate)
+        // Setting default rotation
+        // NOTE: Rotate by theta ccw about z-axis (call on Rotate)
+
+        // Setting default perspective (upon running program)
+        Display.setPersp(persp);
+
+        // Setting default luminance (upon running program)
+        Display.setLuminance(lum);
 
         // Setting color (upon running program)
         Display.setColor(color);
 
-        // Setting perspective (upon running program)
-        Display.setPerp(persp);
-
-        // Setting pen radius (dependent on size)
+        // Setting pen radius (dependent on mat size)
         StdDraw.setPenRadius(1.0/(size*20));
 
         StdDraw.enableDoubleBuffering();
@@ -129,17 +168,15 @@ public class TerrainMap {
         // Displaying map (upon running program)
         if (mapType == 0) Display.displayPoints(mat);
         else if (mapType == 1) Display.displayMesh(mat);
-        else Display.displayTerrain(mat, persp);
+        else Display.displayTerrain(mat);
         StdDraw.show();
 
-        JFrame f = StdDraw.getFrame();
-        f.setTitle("Terrain Map");
+        // Call to GUI
+        new TerrainGUI(StdDraw.getFrame(), "Terrain Map", mat);
 
         // when implementing animation, remember that we need to change perspective, and points are rotated by the angle between 
         // the original perspective and the new perspective
         // rotation will be left and right only for now (implement by using MouseEvent and buttons)
         // research how x and y coordinates are affected by rotation
-
-        // Implement JButtons to change color, size, and choose between points, mesh or terrain
     }
 }

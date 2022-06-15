@@ -10,14 +10,17 @@ public class Point {
         this.y = y;
         this.z = z;
     }
+
     // Gets x-coord
     public double getX() {
         return x;
     }
+
     // Gets y-coord
     public double getY() {
         return y;
     }
+
     // Gets z-coord
     public double getZ() {
         return z;
@@ -35,7 +38,7 @@ public class Point {
         int shift = (mat.length-1)/2;
         for (int i = 0; i < mat.length; i++) {
             for (int j = 0; j < mat.length; j++) {
-                mat[i][j] = new Point(i-shift, j-shift, 0.3*(j-shift));
+                mat[i][j] = new Point(i-shift, j-shift, 0.4*(j-shift));
             }
         }
     }
