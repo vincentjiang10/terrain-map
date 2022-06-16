@@ -2,25 +2,18 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 /**
- * Console interaction - only generates one map based on supplied arguments
+ * Console interaction - Takes in inputs from console and calls TerrainGUI.java
  */
 public class TerrainMap {
     final static int NUM_ARGS = 5;
-    // use enum?
-    final static String[] TER_TYPES = {"Midpoint Displacement = 0", "Cellular Automata = 1", "Diamond Square = 2", "Perlin Noise = 3"};
+    // Better to get from TerrainGUI than vice versa due to event handling in GUI
+    final static String[] MAP_TYPES = TerrainGUI.MAP_TYPES;
+    final static String[] ALGORITHMS = TerrainGUI.ALGORITHMS;
     final static String[] COLORS = {"Gray = 0", "Red = 1", "Green = 2", "Blue = 3"};
-    final static String[] MAP_TYPES = {"Points = 0", "Mesh = 1", "Terrain = 2"};
     final static int MAX_SIZE = 10;
     final static int MAX_DEV = 10;
-    // Default angle
-    final static double theta = 45; // correspond to rotation about z-axis
-    // Default luminance
-    final static double lum = 0.5;
-    // TODO: doesn't quite work (figure out before implementing rotation)
-    // Default perspective
-    final static Point persp = new Point(0,1,1);
 
-    private static int terType;
+    private static int algorithm;
     private static int size;
     private static int color;
     private static int mapType;
@@ -34,17 +27,16 @@ public class TerrainMap {
     }
     public static void main(String[] args) throws Exception {
         int len = args.length;
-        // Maybe ask question to filter whether user wants to run on command line or GUI
         if (len == 0) {
             Scanner sc = new Scanner(System.in);
             String arg = "First";
             while (true) {
                 try {
                     if (arg.equals("First")) {
-                        System.out.print("Enter map type " + Arrays.toString(TER_TYPES) + ": ");
-                        terType = sc.nextInt();
-                        if (terType < 0 || terType > TER_TYPES.length-1) {
-                            invalid(arg, TER_TYPES.length-1, false);
+                        System.out.print("Enter algorithm " + Arrays.toString(ALGORITHMS) + ": ");
+                        algorithm = sc.nextInt();
+                        if (algorithm < 0 || algorithm > ALGORITHMS.length-1) {
+                            invalid(arg, ALGORITHMS.length-1, false);
                             continue;
                         }
                         arg = "Second";
@@ -98,8 +90,8 @@ public class TerrainMap {
         else if (len == NUM_ARGS) {
             String arg = "First";
             try {
-                terType = Integer.parseInt(args[0]);
-                if (terType < 0 || terType > TER_TYPES.length-1) invalid(arg, TER_TYPES.length-1, true);
+                algorithm = Integer.parseInt(args[0]);
+                if (algorithm < 0 || algorithm > ALGORITHMS.length-1) invalid(arg, ALGORITHMS.length-1, true);
                 arg = "Second";
                 size = Integer.parseInt(args[1]);
                 if (size < 0 || size > MAX_SIZE) invalid(arg, MAX_SIZE, true);
@@ -120,11 +112,10 @@ public class TerrainMap {
         }
         else throw new Exception("Number of arguments is not equal to " + NUM_ARGS);
 
-        // Map info to console (TODO: may be altered into method that can be used by GUI)
-        // A single function containing map info that can be called in this class and in GUI class
+        // Map info to console
         System.out.println("\nPrinting map information... ");
-        String a0 = TER_TYPES[terType];
-        System.out.println("Terrain type: " + a0.substring(0, a0.length()-4));
+        String a0 = ALGORITHMS[algorithm];
+        System.out.println("Algorithm: " + a0.substring(0, a0.length()-4));
         System.out.println("Terrain dimensions: " + size + " by " + size);   
         String a2 = COLORS[color];
         System.out.println("Color gradient: " + a2.substring(0,a2.length()-4));
@@ -132,51 +123,7 @@ public class TerrainMap {
         System.out.println("Map type: " + a3.substring(0, a3.length()-4));
         System.out.println("Deviation: " + dev);
 
-        // Will be used as argument for several classes (which can also have scanners asking for certain variables)
-        Point[][] mat = new Point[size][size];
-        Point.setMatrix(mat);
-
-        if (terType == 0) {
-            MidpointDisplacement.setDev(dev/10.0);
-            MidpointDisplacement.setMatrix(mat);
-        }
-
-        // Setting canvas size
-        StdDraw.setCanvasSize(1200, 800);
-
-        // Setting scale
-        StdDraw.setXscale(-size, size);
-        StdDraw.setYscale(-0.5*size, 0.5*size);
-
-        // Setting default rotation
-        // NOTE: Rotate by theta ccw about z-axis (call on Rotate)
-
-        // Setting default perspective (upon running program)
-        Display.setPersp(persp);
-
-        // Setting default luminance (upon running program)
-        Display.setLuminance(lum);
-
-        // Setting color (upon running program)
-        Display.setColor(color);
-
-        // Setting pen radius (dependent on mat size)
-        StdDraw.setPenRadius(1.0/(size*20));
-
-        StdDraw.enableDoubleBuffering();
-        StdDraw.clear();
-        // Displaying map (upon running program)
-        if (mapType == 0) Display.displayPoints(mat);
-        else if (mapType == 1) Display.displayMesh(mat);
-        else Display.displayTerrain(mat);
-        StdDraw.show();
-
         // Call to GUI
-        new TerrainGUI(StdDraw.getFrame(), "Terrain Map", mat);
-
-        // when implementing animation, remember that we need to change perspective, and points are rotated by the angle between 
-        // the original perspective and the new perspective
-        // rotation will be left and right only for now (implement by using MouseEvent and buttons)
-        // research how x and y coordinates are affected by rotation
+        new TerrainGUI("Terrain Map", algorithm, size, color, mapType, dev);
     }
 }

@@ -1,7 +1,7 @@
 ## Terrain-Map
 ### Project Description
 Include picture of standard perspective and default position
-- What has been done: talk in detail about the process of algorithm implementation, data structures, gui, console I/O, etc.
+- What has been done: talk in detail about the process of algorithm implementation, data structures, gui (J swing and event handling), console I/O, debugging, git, etc. -> relate back to software design principles used (perhaps OOP)
 - Add what has been accomplished, etc.
 
 ### Algorithms Implemented
@@ -22,16 +22,20 @@ Include picture of standard perspective and default position
 - use of swing and awt to make GUI (button to enable/disable double buffering)
 - rotation about x-axis
 - animation upon rotation
+- makefile 
 - other algorithms
 - add another md page for interesting bugs?
-- official documentation
+- official documentation (look at other README.md) + testing
 
 ### Before Running the Program
 #### Prerequisites
 This project implements the StdDraw library (https://introcs.cs.princeton.edu/java/stdlib/javadoc/StdDraw.html), which uses built-in java libraries like java.awt and javax.swing. 
-NOTE: StdDraw library has been slightly modified to return abstracted JFrame (StdDraw.getFrame())
+
+NOTE: StdDraw library has been slightly modified to return abstracted JFrame (getFrame()). Additionally, init() was modified to add additional components other than the drawn map to main JFrame.
+
 #### Note
 - Only gray, red, green, and blue can be set as pen color when running TerrainMap.java in console/terminal. Other colors will be available on the GUI.
+- Talk about running different types of programs (2 main ones are TerrainMap.java and TerrainGUI.java). If user wants to automatically use GUI, he/she can by calling java TerrainGUI after running the makefile.
 
 ### Running the Program
 - Describe option to use args[] or stdin

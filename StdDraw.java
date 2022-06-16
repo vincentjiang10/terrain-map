@@ -37,6 +37,7 @@ import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
+import java.awt.FlowLayout;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -66,13 +67,14 @@ import java.util.LinkedList;
 import java.util.TreeSet;
 import java.util.NoSuchElementException;
 import javax.imageio.ImageIO;
-
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
 /**
@@ -620,6 +622,7 @@ public final class StdDraw implements ActionListener, MouseListener, MouseMotion
 
     // the frame for drawing to the screen
     private static JFrame frame;
+    private static JPanel panel;
 
     // mouse state
     private static boolean isMousePressed = false;
@@ -713,7 +716,14 @@ public final class StdDraw implements ActionListener, MouseListener, MouseMotion
         draw.addMouseListener(std);
         draw.addMouseMotionListener(std);
 
-        frame.setContentPane(draw);
+        panel = new JPanel(new FlowLayout());
+        panel.add(draw);
+        JPanel components = new JPanel();
+        components.setLayout(new BoxLayout(components, BoxLayout.Y_AXIS));
+        TerrainGUI.initComponents(components);
+        panel.add(components);
+        frame.add(panel);
+
         frame.addKeyListener(std);    // JLabel cannot get keyboard focus
         frame.setFocusTraversalKeysEnabled(false);  // allow VK_TAB with isKeyPressed()
         frame.setResizable(false);
@@ -724,6 +734,8 @@ public final class StdDraw implements ActionListener, MouseListener, MouseMotion
         frame.pack();
         frame.requestFocusInWindow();
         frame.setVisible(true);
+
+        // frame.add(panel);
     }
 
     // create the menu bar (changed to private)

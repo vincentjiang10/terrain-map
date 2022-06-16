@@ -26,6 +26,21 @@ public class Point {
         return z;
     }
 
+    // Gets average x-coords of 2 Points
+    public double avgX(Point p){
+        return (x + p.getX())/2;
+    }
+
+    // Gets average y-coords of 2 Points
+    public double avgY(Point p){
+        return (y + p.getY())/2;
+    }
+
+    // Gets average z-coords of 2 Points
+    public double avgZ(Point p){
+        return (z + p.getZ())/2;
+    }
+
     // Sets new x, y, and z coordinates
     public void set(double x, double y, double z) {
         this.x = x;
