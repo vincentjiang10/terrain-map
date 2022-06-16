@@ -30,6 +30,7 @@ Include picture of standard perspective and default position
 ### Before Running the Program
 #### Prerequisites
 This project implements the StdDraw library (https://introcs.cs.princeton.edu/java/stdlib/javadoc/StdDraw.html), which uses built-in java libraries like java.awt and javax.swing. 
+
 NOTE: StdDraw library has been slightly modified to return abstracted JFrame (getFrame()). Additionally, init() was modified to add additional components other than the drawn map to main JFrame.
 
 #### Note
