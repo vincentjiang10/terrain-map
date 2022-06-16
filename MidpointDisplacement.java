@@ -8,22 +8,10 @@
 public class MidpointDisplacement {
     // Deviation: used in noise generation and randomness
     private static double devCoef;
-    
-    // Computes noise for x and y coordinates
-    public static double noiseXY() {
-        return (1-devCoef/4) + devCoef/2 * Math.random();
-    }
 
-    // Computes noise for z coordinates
+    // Computes noise 
     public static double noiseZ() {
-        return (1 - 0.75*devCoef) + 1.5*devCoef * Math.random();
-    }
-
-    // Smaller noise
-    public static double noise(double p0, double p1) {
-        if (devCoef == 0) return (p0+p1)/2;
-        double noise = (Math.random() > 0.5) ? p1-p0 : p0-p1;
-        return (p0+p1)/2 + 0.5*noise*Math.random();
+        return (1 - devCoef/2) + devCoef * Math.random();
     }
 
     public static double noise4(double p0, double p1, double p2, double p3) {
@@ -31,7 +19,7 @@ public class MidpointDisplacement {
         double largest = Math.max(p0, Math.max(p1, Math.max(p2, p3)));
         double smallest = Math.min(p0, Math.min(p1, Math.min(p2, p3)));
         double noise = (Math.random() > 0.5) ? smallest - largest : largest - smallest;
-        return (p0+p1+p2+p3)/4 + 0.5*noise*Math.random();
+        return (p0+p1+p2+p3)/4 + 0.8*devCoef*noise*Math.random();
     }
 
     // Initializes devCoef
@@ -43,16 +31,18 @@ public class MidpointDisplacement {
     public static void setMatrix(Point[][] mat) {
         int len = mat.length;
         Point p0 = mat[0][0];
-        p0.set(p0.getX() * noiseXY(), p0.getY() * noiseXY(), p0.getZ() * noiseZ());
+        p0.set(p0.getX(), p0.getY(), p0.getZ() * noiseZ());
         Point p1 = mat[0][len-1];
-        p1.set(p1.getX() * noiseXY(), p1.getY() * noiseXY(), p1.getZ() * noiseZ());
+        p1.set(p1.getX(), p1.getY(), p1.getZ() * noiseZ());
         Point p2 = mat[len-1][0];
-        p2.set(p2.getX() * noiseXY(), p2.getY() * noiseXY(), p2.getZ() * noiseZ());
+        p2.set(p2.getX(), p2.getY(), p2.getZ() * noiseZ());
         Point p3 = mat[len-1][len-1];
-        p3.set(p3.getX() * noiseXY(), p3.getY() * noiseXY(), p3.getZ() * noiseZ());
+        p3.set(p3.getX(), p3.getY(), p3.getZ() * noiseZ());
         setMatrixHelper(mat, 0, 0, len-1, len-1);
     }
 
+    // Look at way to set boundary coordinates with some noise
+    
     // Take average of all x, y, z + some noise (will be based on deviation and difference between coords)
     // (p0i, p0j) is lower left corner; (p1i, p1j) is upper right corner
     public static void setMatrixHelper(Point[][] mat, int p0i, int p0j, int p1i, int p1j) {
@@ -68,27 +58,27 @@ public class MidpointDisplacement {
         int avgJ = (p0j + p1j)/2;
 
         // calculations for P0
-        double P0x = (p0.getX() + p1.getX())/2;
-        double P0y = (p0.getY() + p1.getY())/2;
-        double P0z = noise(p0.getZ(), p1.getZ());
+        double P0x = p0.avgX(p1);
+        double P0y = p0.avgY(p1);
+        double P0z = p0.avgZ(p1);
         mat[avgI][p0j].set(P0x, P0y, P0z);
 
         // calculations for P1
-        double P1x = (p1.getX() + p2.getX())/2;
-        double P1y = (p1.getY() + p2.getY())/2;
-        double P1z = noise(p1.getZ(), p2.getZ());
+        double P1x = p1.avgX(p2);
+        double P1y = p1.avgY(p2);
+        double P1z = p1.avgZ(p2);
         mat[p1i][avgJ].set(P1x, P1y, P1z);
 
         // calculations for P2
-        double P2x = (p2.getX() + p3.getX())/2;
-        double P2y = (p2.getY() + p3.getY())/2;
-        double P2z = noise(p2.getZ(), p3.getZ());
+        double P2x = p2.avgX(p3);
+        double P2y = p2.avgY(p3);
+        double P2z = p2.avgZ(p3);
         mat[avgI][p1j].set(P2x, P2y, P2z);
 
         // calculations for P3
-        double P3x = (p3.getX() + p0.getX())/2;
-        double P3y = (p3.getY() + p0.getY())/2;
-        double P3z = noise(p3.getZ(), p0.getZ());
+        double P3x = p3.avgX(p0);
+        double P3y = p3.avgY(p0);
+        double P3z = p3.avgZ(p0);
         mat[p0i][avgJ].set(P3x, P3y, P3z);
 
         // calculations for PC
