@@ -1,8 +1,10 @@
 ## Terrain-Map
 ### Project Description
 Include picture of standard perspective and default position
-- What has been done: talk in detail about the process of algorithm implementation, data structures, gui (J swing and event handling), console I/O, debugging, git, etc. -> relate back to software design principles used (perhaps OOP)
+- What has been done: talk in detail about the process of algorithm implementation, data structures, gui (J swing and awt frameworks, event handling, component design), graphics and animation (through double buffering process), console I/O, debugging & testing, git, etc. -> relate back to software design principles (search up and study some of these) used (perhaps OOP principles), clean and scalable code, coupling & decoupling, etc.
 - Add what has been accomplished, etc.
+
+### Motivation
 
 ### Algorithms Implemented
 
@@ -16,13 +18,13 @@ Include picture of standard perspective and default position
 
 ### To Be Added
 - rotation about z-axis
-- a command that bypasses console prompts and instead skips to GUI with default matrix
+- makefile and testing it
 - "far away look" effect 
-- implement zoom-in and zoom-out button (resets canvas size after user selects a point on map (show clicked point with mouse event))
-- use of swing and awt to make GUI (button to enable/disable double buffering)
+- implement zoom-in and zoom-out button (resets canvas size after user selects a point on map (show clicked point with mouse event)) (Separate branch)
+- implement color slider + implmenting JSlider (Separate branch)
 - rotation about x-axis
 - animation upon rotation
-- makefile 
+- makefile
 - other algorithms
 - add another md page for interesting bugs?
 - official documentation (look at other README.md) + testing
@@ -31,7 +33,7 @@ Include picture of standard perspective and default position
 #### Prerequisites
 This project implements the StdDraw library (https://introcs.cs.princeton.edu/java/stdlib/javadoc/StdDraw.html), which uses built-in java libraries like java.awt and javax.swing. 
 
-NOTE: StdDraw library has been slightly modified to return abstracted JFrame (getFrame()). Additionally, init() was modified to add additional components other than the drawn map to main JFrame.
+NOTE: StdDraw library has been slightly modified: StdDraw.init() was modified to add additional components other than the drawn map to main JFrame as well as change the frame title. Additionally, the static initializer has been removed to prevent multiple calls to init().
 
 #### Note
 - Only gray, red, green, and blue can be set as pen color when running TerrainMap.java in console/terminal. Other colors will be available on the GUI.
@@ -40,6 +42,6 @@ NOTE: StdDraw library has been slightly modified to return abstracted JFrame (ge
 ### Running the Program
 - Describe option to use args[] or stdin
 - Rotation by 45 degrees is applied to default points (set by Point.java)
-- points are then mapped to plane z = zTilt*y
+- points are then mapped to plane z = zTilt*y, where zTilt = tan(phi) (Explain and show picture of mapping y-coordinate to z-coordinate as a projection)
 
 Running is simple:
