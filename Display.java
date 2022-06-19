@@ -1,14 +1,18 @@
 public class Display {
     // TODO: if implementing color slider, change this to three separate values standing for rgb
     private static int color;
+    private static int r; 
+    private static int g;
+    private static int b;
     // light represents a unit vector (norm = 1)
     private static Point light;
-    private static Point persp;
     private static double phi;
-    private static double zTilt;
+    private static double sinPhi;
     // from 0 to 10
     private static double luminance;
     private static boolean showBoundary;
+
+    private static Point persp = TerrainGUI.persp;
     
     // Gets light element based on cross product of two vectors and then dot product the persp
     // The two vectors are v0 = p1-p0 and v1 = p2-p1
@@ -53,15 +57,10 @@ public class Display {
         light = terLight;
     }
 
-    // Sets perspective
-    public static void setPersp(Point terPersp) {
-        persp = terPersp;
-    }  
-
     // Sets phi
     public static void setPhi(double terPhi) {
         phi = terPhi;
-        zTilt = Math.tan(phi/180*Math.PI);
+        sinPhi = Math.sin(phi/180*Math.PI);
     }
 
     // Sets whether to show boundary
@@ -81,12 +80,12 @@ public class Display {
         // from 0 to 1
         // TODO: try to get as close to having the full range (all z vals spread over 0 to 1)
         // Perhaps use the initalialized Points for help (will be set as fields)
-        double zVar = ((z+zTilt*size)/(2*zTilt*size));
+        double zVar = ((z+sinPhi*size)/(2*sinPhi*size));
         if (zVar > 1) zVar = 1;
         if (zVar < 0) zVar = 0;
 
         // gray
-        if (color == 0) StdDraw.setPenColor((int)(light * (zVar * 255/2 +70)), (int)(light * (zVar * 255/2 + 70)), (int)(light * (zVar * 255/2 + 70)));
+        if (color == 0) StdDraw.setPenColor((int)(light * (zVar * 185 + 70)), (int)(light * (zVar * 185 + 70)), (int)(light * (zVar * 185 + 70)));
         // red
         else if (color == 1) StdDraw.setPenColor((int)(light * (zVar * 100 + 155)), (int)(light * 50), (int)(light * 70));
         // green
@@ -106,7 +105,7 @@ public class Display {
                 Point p = mat[i][j];
                 double x = p.getX();
                 double z = p.getZ();
-                setPenColor(z-zTilt*(j-shift), shift, 1);
+                setPenColor(z-sinPhi*(j-shift), shift, 1);
                 StdDraw.point(x, z);
             }
         }
@@ -122,7 +121,7 @@ public class Display {
                 Point p = mat[i][j];
                 Point pUp = mat[i][j+1];
                 Point pRight = mat[i+1][j];
-                setPenColor(p.getZ() - zTilt*(j-shift), shift, getLight(p, pUp, pRight));
+                setPenColor(p.getZ() - sinPhi*(j-shift), shift, getLight(p, pUp, pRight));
                 // draws triangle
                 StdDraw.polygon(new double[] {p.getX(), pUp.getX(), pRight.getX()}, new double[] {p.getZ(), pUp.getZ(), pRight.getZ()});
             }
@@ -135,7 +134,7 @@ public class Display {
             Point p = mat[i][len-1];
             double pX = p.getX();
             double pZ = p.getZ();
-            setPenColor(prevZ - zTilt*(len-1-shift), shift, 1);
+            setPenColor(prevZ - sinPhi*(len-1-shift), shift, 1);
             StdDraw.line(pX, pZ, prevX, prevZ);
             prevX = pX;
             prevZ = pZ;
@@ -144,7 +143,7 @@ public class Display {
             Point p = mat[len-1][j];
             double pX = p.getX();
             double pZ = p.getZ();
-            setPenColor(prevZ - zTilt*(j-shift), shift, 1);
+            setPenColor(prevZ - sinPhi*(j-shift), shift, 1);
             StdDraw.line(pX, pZ, prevX, prevZ);
             prevX = pX;
             prevZ = pZ;
@@ -157,10 +156,8 @@ public class Display {
         int len = mat.length;
         int shift = (len-1)/2;
 
-        // TODO: Top boundary outline
         // TODO: Boundary function?
         // TODO: Perhaps do something about points below boundary
-
 
         Point prev0;
         Point prev1;
@@ -174,11 +171,11 @@ public class Display {
                 Point curr1 = mat[i+1][j];
                 sumZ += curr0.getZ();
                 // fill first triangle (prev0, prev1, curr0)
-                setPenColor(sumZ/3 - zTilt*(j-shift), shift, getLight(prev0, prev1, curr0));
+                setPenColor(sumZ/3 - sinPhi*(j-shift), shift, getLight(prev0, prev1, curr0));
                 StdDraw.filledPolygon(new double[] {prev0.getX(), prev1.getX(), curr0.getX()}, new double[] {prev0.getZ(), prev1.getZ(), curr0.getZ()});
                 sumZ -= prev0.getZ() - curr1.getZ();
                 // fill second triangle (prev1, curr0, curr1)
-                setPenColor(sumZ/3 - zTilt*(j-shift), shift, getLight(prev1, curr0, curr1));
+                setPenColor(sumZ/3 - sinPhi*(j-shift), shift, getLight(curr0, prev1, curr1));
                 StdDraw.filledPolygon(new double[] {prev1.getX(), curr0.getX(), curr1.getX()}, new double[] {prev1.getZ(), curr0.getZ(), curr1.getZ()});
                 sumZ -= prev1.getZ();
                 // set prev0 to curr0 and prev1 to curr1
@@ -187,5 +184,9 @@ public class Display {
             }
         }
     }
-     // TODO: boundary outline
+
+    // Draws the boundary (outline) of map
+    public static void displayBoundary(Point[][] mat) {
+
+    }
 }

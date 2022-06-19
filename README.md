@@ -16,7 +16,11 @@ Include picture of standard perspective and default position
 - talk about rotation (calculations, how it's done?)
 - Note: although only the x and z coordinates are diplayed on the screen (3D projected onto 2D, specifically the XZ plane), the hidden y-value is used in creating the rotation effect
 
+### Features
+- Talk about the JSwing components and what they do
+
 ### To Be Added
+- xyz axis on the screen
 - rotation about z-axis
 - makefile and testing it
 - "far away look" effect 
@@ -42,6 +46,6 @@ NOTE: StdDraw library has been slightly modified: StdDraw.init() was modified to
 ### Running the Program
 - Describe option to use args[] or stdin
 - Rotation by 45 degrees is applied to default points (set by Point.java)
-- points are then mapped to plane z = zTilt*y, where zTilt = tan(phi) (Explain and show picture of mapping y-coordinate to z-coordinate as a projection)
+- TODO: modify this -> points are then mapped to the XZ plane. (Explain and show picture of 3D to 2D projection)
 
 Running is simple:

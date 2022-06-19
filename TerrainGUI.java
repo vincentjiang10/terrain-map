@@ -1,3 +1,7 @@
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
@@ -5,6 +9,7 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -13,36 +18,20 @@ import javax.swing.JSlider;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.TitledBorder;
 
-import java.awt.*;
-
 /**
  * Calls on Display.java and Rotate.java based on Event
  */
 public class TerrainGUI {
-    final static List<String> ALGORITHMS = Arrays.asList("Midpoint Displacement", "Cellular Automata", "Diamond Square", "Perlin Noise");
-    final static List<String> COLORS = Arrays.asList("Gray", "Red", "Green", "Blue");
-    final static List<String> MAP_TYPES = Arrays.asList("Points", "Mesh", "Terrain");
-    // Minimum and maximum values for sliders
-    final static int MIN_SIZE = 0;
-    final static int MAX_SIZE = 10;
-    final static int MIN_DEV = 0;
-    final static int MAX_DEV = 10;
-    final static int MIN_ZOOM = 0;
-    final static int MAX_ZOOM = 200;
-
     private static int algorithm;
     private static int size; // NOTE: size slider should display log_2(size-1) => size should receive 2^(size display)+1
     // TODO: add new customColor field (type int[3]) + add new customColorSlider (contains three sliders for rgb values) [Needs to be custom (extends JSlider - inheritance, etc.)]
     private static int color;
     private static int mapType;
     private static int dev;
-    private static int zoom;
-    // NOTE: when implementing phi, will need to take a look at default setting in Point.java
-    private static int phi; // NOTE: Mouse event will automatically call on rotate with increment
-    private static int theta; // correspond to rotation about z-axis (TODO: after Rotate.java is finished, call it in initGUI)
+    private static double zoom;
+    private static double phi; // NOTE: Mouse event will automatically call on rotate with increment
+    private static double theta; // correspond to rotation about z-axis (TODO: after Rotate.java is finished, call it in initGUI)
     private static double luminance;
-    // TODO: doesn't quite work (figure out before implementing rotation)
-    private static Point persp;
     private static Point light;
     private static boolean showBoundary;
     private static Point[][] mat;
@@ -80,6 +69,28 @@ public class TerrainGUI {
     // Shows and adjust custom colors
     // TODO: add custom color slider
 
+    final static List<String> ALGORITHMS = Arrays.asList("Midpoint Displacement", "Cellular Automata", "Diamond Square", "Perlin Noise");
+    final static List<String> COLORS = Arrays.asList("Gray", "Red", "Green", "Blue");
+    // TODO: preset rgb-values array corresponding to colors in COLORS
+    final static List<String> MAP_TYPES = Arrays.asList("Points", "Mesh", "Terrain");
+    // TODO: doesn't quite work (figure out before implementing rotation)
+    final static Point persp = new Point(0,1,0);
+    // Minimum and maximum values for sliders
+    final static int MIN_SIZE = 0;
+    final static int MAX_SIZE = 10;
+    final static int MIN_DEV = 0;
+    final static int MAX_DEV = 10;
+    final static int MIN_ZOOM = 0;
+    final static int MAX_ZOOM = 200;
+    final static int MIN_PHI = -90;
+    final static int MAX_PHI = 90;
+    final static int MIN_THETA = -180;
+    final static int MAX_THETA = 180;
+    final static int MIN_LUM = 0;
+    final static int MAX_LUM = 100;
+    final static int MIN_LIGHT = -180;
+    final static int MAX_LIGHT = 180;
+
     // Adds components to two subpanels added to JPanel in StdDraw.init()
     public static void addComponents(JPanel components0, JPanel components1) {
         components0.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED, Color.GRAY, Color.GRAY));
@@ -97,7 +108,7 @@ public class TerrainGUI {
 
         components0.add(comboBoxes);
         // adds invisible component (space)
-        components0.add(Box.createVerticalStrut(10));
+        components0.add(Box.createVerticalStrut(20));
 
         // new JPanel containing JSliders
         JPanel sliders0 = new JPanel();
@@ -106,16 +117,35 @@ public class TerrainGUI {
         sliders0.add(sizeSlider);
         sliders0.add(devSlider);
         sliders0.add(zoomSlider);
+        sliders0.add(phiSlider);
+        sliders0.add(thetaSlider);
 
         components0.add(sliders0);
+        
+        // TODO: sliders1.add(customColorSlider)
+        // components1.add(Box.createVerticalStrut(20))
 
-        // new JPanel containing custom color slider and other JSliders
+        // new JPanel and other JSliders
         JPanel sliders1 = new JPanel();
-        // TODO: will add another subpanel sliders1 containing new color slider & other sliders to components1
-        // components1.add(sliders1)
+        sliders1.setLayout(new BoxLayout(sliders1, BoxLayout.Y_AXIS));
+        sliders1.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+        sliders1.add(lumSlider);
+        sliders1.add(lightSlider);
+
+        components1.add(sliders1);
+        components1.add(Box.createVerticalStrut(20));
+
+        // new JPanel containing Jbuttons
+        JPanel buttons = new JPanel();
+        buttons.setLayout(new FlowLayout());
+        buttons.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+        buttons.add(boundary);
+        buttons.add(reapply);
+        buttons.add(reset);
+
+        components1.add(buttons);
     }
 
-    // TODO: Remember to add listeners
     // Initializes GUI setup 
     public static void initComponents() {
         // JComboBoxes
@@ -124,7 +154,7 @@ public class TerrainGUI {
         mapTypeBox = new JComboBox<String>(MAP_TYPES.toArray(new String[0]));
 
         // JSliders (Shows and adjust respective fields)
-        sizeSlider = new JSlider(MIN_SIZE, MAX_SIZE, (int) (Math.log(size-1)/Math.log(2)));
+        sizeSlider = new JSlider(MIN_SIZE, MAX_SIZE);
         Hashtable<Integer, JLabel> sizeLabels = new Hashtable<>();
         for (int i = 0; i <= 10; i++) {
             sizeLabels.put(i, new JLabel(Integer.toString(i)));
@@ -133,23 +163,55 @@ public class TerrainGUI {
         sizeSlider.setMajorTickSpacing(1);
         sizeSlider.setSnapToTicks(true);
 
-        devSlider = new JSlider(MIN_DEV, MAX_DEV, dev);
+        devSlider = new JSlider(MIN_DEV, MAX_DEV);
+        // devLabels = sizeLabels
         initSlider(devSlider, "Deviation", sizeLabels);
         devSlider.setMajorTickSpacing(1);
         devSlider.setSnapToTicks(true);
 
-        // TODO: zoomSlider
         // nonlinear scale from 0 to 1, then linear from 1 to 2
         // if zoom >= 1, then val = 100*zoom
         // else val = 200 - 100/zoom
-        zoomSlider = new JSlider(MIN_ZOOM, MAX_ZOOM, zoom >= 1 ? 100 * (int) zoom : 200 - (int) (100/zoom));
+        zoomSlider = new JSlider(MIN_ZOOM, MAX_ZOOM);
         Hashtable<Integer, JLabel> zoomLabels = new Hashtable<>();
         zoomLabels.put(0, new JLabel("50%"));
         zoomLabels.put(100, new JLabel("100%"));
         zoomLabels.put(200, new JLabel("200%"));
         initSlider(zoomSlider, "Zoom", zoomLabels);
         
-        // TODO: finish the rest
+        phiSlider = new JSlider(MIN_PHI, MAX_PHI);
+        Hashtable<Integer, JLabel> phiLabels = new Hashtable<>();
+        phiLabels.put(-90, new JLabel("-90°"));
+        phiLabels.put(0, new JLabel("0°"));
+        phiLabels.put(90, new JLabel("90°"));
+        initSlider(phiSlider, "Phi (X-axis Rotation)", phiLabels);
+        phiSlider.setMajorTickSpacing(45);
+
+        thetaSlider = new JSlider(MIN_THETA, MAX_THETA);
+        Hashtable<Integer, JLabel> thetaLabels = new Hashtable<>();
+        thetaLabels.put(-180, new JLabel("-180°"));
+        thetaLabels.put(0, new JLabel("0°"));
+        thetaLabels.put(180, new JLabel("180°"));
+        initSlider(thetaSlider, "Theta (Z-axis Rotation)", thetaLabels);
+        thetaSlider.setMajorTickSpacing(45);
+        
+        lumSlider = new JSlider(MIN_LUM, MAX_LUM);
+        Hashtable<Integer, JLabel> lumLabels = new Hashtable<>();
+        for (int i = 0; i <= 100; i += 10) {
+            lumLabels.put(i, new JLabel(Integer.toString(i)));
+        }
+        initSlider(lumSlider, "Luminance", lumLabels);
+        lumSlider.setMajorTickSpacing(10);
+
+        lightSlider = new JSlider(MIN_LIGHT, MAX_LIGHT);
+        // lightLabels = thetaLabels
+        initSlider(lightSlider, "Light Angle", thetaLabels);
+        lightSlider.setMajorTickSpacing(45);
+
+        // JButtons
+        boundary = new JButton("Boundary", new ImageIcon("buttonIcons/boundary.png"));
+        reapply = new JButton("Reapply", new ImageIcon("buttonIcons/reapply.png"));
+        reset = new JButton("Reset", new ImageIcon("buttonIcons/reset.png"));
     }
 
     // Initializes and sets state of sliders
@@ -160,56 +222,147 @@ public class TerrainGUI {
         slider.setPaintTicks(true);
         slider.setLabelTable(labels);
         slider.setPaintLabels(true);
-        slider.setPreferredSize(new Dimension(100, 70));
+        slider.setPreferredSize(new Dimension(300, 70));
     }
 
-    // TODO: Describe in detial in README.md
+    // TODO: Describe in detail in README.md
     // Following methods take no argument for simplicity and due to event listeners keeping track of class state (field values).
     // Class state must be maintained for features like reapply and [TODO: add other features needing class state] to work. 
     // Additionally, this supports code scalability.
 
     // Initializes Terrain GUI
     public static void initGUI() {
-        // intializes StdDraw (calls StdDraw.init())
+        // intializes StdDraw (calls StdDraw.init(), which calls addComponents())
         StdDraw.setCanvasSize(600, 600);
         StdDraw.enableDoubleBuffering();
   
         // initial display
         initDisplay();
+        // displays map
+        display();
+        // adds listeners (must be called after initDisplay() to prevent event firing)
+        addListeners();
     }
 
+    // TODO: finish + simplify and group similar code
+    // Adds event listeners to Swing components
+    public static void addListeners() {
+        // combo boxes' listeners
+        algBox.addActionListener(ae -> {
+            algorithm = ALGORITHMS.indexOf(algBox.getSelectedItem());
+            reapply();
+        });
+        colorBox.addActionListener(ae -> {
+            color = COLORS.indexOf(colorBox.getSelectedItem());
+            setColor();
+            display();
+        });
+        mapTypeBox.addActionListener(ae -> {
+            mapType = MAP_TYPES.indexOf(mapTypeBox.getSelectedItem());
+            display();
+        });
+
+        // sliders' listeners
+        sizeSlider.addChangeListener(ce -> {
+            size = (int) Math.pow(2, sizeSlider.getValue()) + 1;
+            setScale();
+            initMatrix();
+            reapply();
+        });
+        devSlider.addChangeListener(ce -> {
+            dev = devSlider.getValue();
+            setAlg();
+            display();
+        });
+        zoomSlider.addChangeListener(ce -> {
+            int zoomVal = zoomSlider.getValue();
+            if (zoomVal >= 100) zoom = zoomVal/100.0;
+            else zoom = 100.0/(200-zoomVal);
+            setScale();
+            display();
+        });
+        phiSlider.addChangeListener(ce -> {
+            phi = phiSlider.getValue();
+            rotate();
+            display();
+        });
+        thetaSlider.addChangeListener(ce -> {
+            theta = thetaSlider.getValue();
+            rotate();
+            display();
+        });
+        lumSlider.addChangeListener(ce -> {
+            luminance = lumSlider.getValue()/100.0;
+            setLum();
+            display();
+        });
+
+        // buttons' listeners
+        reapply.addActionListener(ae -> {
+            reapply();
+        });
+        reset.addActionListener(ae -> {
+            setDefaultGUI();
+            initDisplay();
+        });
+    }
+
+    // Rerenders (common action taken by event listeners)
+    public static void reapply() {
+        setMatrix();
+        setAlg();
+        rotate();
+        display();
+    }
+
+    // TODO: customs renderers for algorithm, color, and mapType (can use ImageIcon or something else?)
     // Displays intial or reset map (called by reset's Listener)
     public static void initDisplay() {
+        // sets initial JComboBoxes display
+        if (algorithm != -1) algBox.setSelectedIndex(algorithm);
+        // custom renderer
+        else {}
+        if (color != -1) colorBox.setSelectedIndex(color);
+        // custom renderer
+        else {}
+        if (mapType != -1) mapTypeBox.setSelectedIndex(mapType);
+        // custom renderer
+        else {}
+
+        // sets intial JSliders display
+        // TODO: will need to add customColorSlider
+        sizeSlider.setValue((int) (Math.log(size-1)/Math.log(2)));
+        devSlider.setValue(dev);
+        zoomSlider.setValue(zoom >= 1 ? 100 * (int) zoom : 200 - (int) (100/zoom));
+        phiSlider.setValue((int) phi);
+        thetaSlider.setValue((int) theta);
+        lumSlider.setValue((int) (100*luminance));
+        lightSlider.setValue((int) (0));
+
         // sets default luminance 
         setLum();
-        // sets default perspective 
-        setPersp();
         // sets default light
         setLight();
-        // sets color 
-        setColor();
-        // sets phi
+        // sets deafult phi
         setPhi();
         // sets showBoundary
         setShowBoundary();
         // initializes and sets matrix
         initMatrix();
         setMatrix();
-        // sets algorithm
-        setAlg();
         // sets scale
         setScale();
-        // displays map
-        display();
+        // sets color 
+        setColor();
+        // sets algorithm
+        setAlg();
+        // rotates default phi and theta
+        rotate();
     }
 
-    // TODO: customs renderers for algorithm, color, and mapType
     // Displays map (called by every Listener)
     public static void display() {
-        // if (algorithm == -1) display alg custom renderer
-        // if (color == -1) display color custom renderer
-        // if (mapType == -1) display mapType custom renderer
-        if (algorithm != -1 && color != -1 && mapType != -1) {
+        if (mapType != -1) {
             StdDraw.clear();
             if (mapType == 0) Display.displayPoints(mat);
             else if (mapType == 1) Display.displayMesh(mat);
@@ -226,22 +379,26 @@ public class TerrainGUI {
 
     // Sets matrix (called by {sizeSlider, reapply}'s Listeners)
     public static void setMatrix() {
-        Point.setMatrix(mat);
+        Transform.setMatrix(mat);
     }
     
     // TODO: add custon renderer when alg = -1 (Displays title ALGORITHM)
     // Sets the algorithm (called by {algBox, sizeSlider, devSlider, reset}'s Listener)
     public static void setAlg() {
-        if (algorithm == 0) {
-            MidpointDisplacement.setDev(dev/10.0);
-            MidpointDisplacement.setMatrix(mat);
+        if (algorithm != -1) {
+            if (algorithm == 0) {
+                MidpointDisplacement.setDev(dev/10.0);
+                MidpointDisplacement.setMatrix(mat);
+            }
+            // TODO: continue here
+            Transform.algMatrix(mat);
         }
     }
 
     // Sets the scale (called by {zoomSlider, sizeSlider}'s Listeners)
     public static void setScale() {
-        StdDraw.setXscale(-0.8*size/zoom, 0.8*size/zoom);
-        StdDraw.setYscale(-0.8*size/zoom, 0.8*size/zoom);
+        StdDraw.setXscale(-0.7*size/zoom, 0.7*size/zoom);
+        StdDraw.setYscale(-0.7*size/zoom, 0.7*size/zoom);
         StdDraw.setPenRadius(1.0/(size/zoom*20));
     }
 
@@ -259,18 +416,20 @@ public class TerrainGUI {
     // Sets phi (called by phiSlider's Listener)
     public static void setPhi() {
         Display.setPhi(phi);
-        Point.setPhi(phi);
+        
     }
-    
-    // Sets perspective (called by thetaSlider's Listener)
-    public static void setPersp() {
-        Display.setPersp(persp);
+
+    // Rotates phi degrees about the x-axis and theta degrees about z-axis (called by {phiSlider, thetaSlider}'s Listeners)
+    public static void rotate() {
+        Transform.rotate(mat, phi, theta);
     }
 
     // TODO: add custon renderer when alg = -1 (Displays title ALGORITHM)
     // Sets color (called by colorBox's Listener)
     public static void setColor() {
-        Display.setColor(color);
+        if (color != -1) {
+            Display.setColor(color);
+        }
     }
 
     // Sets showBoundary (called by boundary's Listener)
@@ -286,10 +445,9 @@ public class TerrainGUI {
         mapType = -1;
         dev = 5;
         zoom = 1;
-        phi = 25; 
+        phi = 45; 
         theta = 0; 
         luminance = 0.5;
-        persp = new Point(1,0,0);
         light = new Point(1, 0, 0);
         showBoundary = true;
     }
@@ -303,11 +461,10 @@ public class TerrainGUI {
         mapType = terMapType;
         dev = terDeviation;
         zoom = 1;
-        phi = 25; 
+        phi = 45; 
         theta = 0; 
         luminance = 0.5;
-        persp = new Point(1,0,0);
-        light = new Point(1, 0, 0);
+        light = new Point(0, 1, 0);
         showBoundary = true;
     }
     

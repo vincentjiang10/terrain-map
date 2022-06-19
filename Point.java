@@ -1,11 +1,7 @@
 public class Point {
-    // remember to add documentation and comments later
     private double x;
     private double y;
     private double z;
-    // TODO: add both phi and theta (initial Rotate will be called here in setMatrix)
-    private static double phi;
-    private static double zTilt;
 
     // Constructor
     public Point(double x, double y, double z) {
@@ -64,21 +60,5 @@ public class Point {
         this.x = x;
         this.y = y;
         this.z = z;
-    }
-
-    public static void setPhi(double terPhi) {
-        phi = terPhi;
-        zTilt = Math.tan(phi/180*Math.PI);
-    }
-
-    // Sets default coordinates of matrix
-    public static void setMatrix(Point[][] mat) {
-        int shift = (mat.length-1)/2;
-        for (int i = 0; i < mat.length; i++) {
-            for (int j = 0; j < mat.length; j++) {
-                mat[i][j] = new Point(i-shift, j-shift, zTilt*(j-shift));
-            }
-        }
-        // call to Rotate both phi and theta
     }
 }
