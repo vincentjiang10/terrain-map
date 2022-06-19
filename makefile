@@ -1,6 +1,6 @@
 JFLAGS = -g
 JC = javac
-JVM= java 
+JVM = java 
 
 .SUFFIXES: .java .class
 
