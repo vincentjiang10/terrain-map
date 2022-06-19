@@ -235,7 +235,7 @@ public class TerrainGUI {
         // intializes StdDraw (calls StdDraw.init(), which calls addComponents())
         StdDraw.setCanvasSize(600, 600);
         StdDraw.enableDoubleBuffering();
-  
+        
         // initial display
         initDisplay();
         // displays map
@@ -421,7 +421,7 @@ public class TerrainGUI {
 
     // Rotates phi degrees about the x-axis and theta degrees about z-axis (called by {phiSlider, thetaSlider}'s Listeners)
     public static void rotate() {
-        Transform.rotate(mat, phi, theta);
+        if (algorithm != -1) Transform.rotate(mat, phi, theta);
     }
 
     // TODO: add custon renderer when alg = -1 (Displays title ALGORITHM)
