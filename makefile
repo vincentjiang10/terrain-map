@@ -9,11 +9,11 @@ JVM= java
 
 CLASSES = \
 	TerrainGUI.java \
-    TerrainMap.java \
-    StdDraw.java \
-    Display.java \
+	TerrainMap.java \
+	StdDraw.java \
+	Display.java \
 	Transform.java \
-    Point.java \
+	Point.java \
 	MidpointDisplacement.java
 
 MAIN = TerrainGUI
