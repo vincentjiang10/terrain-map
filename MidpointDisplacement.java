@@ -40,8 +40,6 @@ public class MidpointDisplacement {
         p3.set(p3.getX(), p3.getY(), len * (Math.random()-0.5) * noise()*0.8);
         setMatrixHelper(mat, 0, 0, len-1, len-1);
     }
-
-    // TODO: Look at way to set boundary coordinates with some noise
     
     // Take average of all x, y, z + some noise (will be based on deviation and difference between coords)
     // (p0i, p0j) is lower left corner; (p1i, p1j) is upper right corner

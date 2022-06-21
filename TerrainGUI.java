@@ -33,7 +33,7 @@ public class TerrainGUI {
     private static double theta; // correspond to rotation about z-axis (TODO: after Rotate.java is finished, call it in initGUI)
     private static double luminance;
     private static Point light;
-    private static boolean showBoundary;
+    private static boolean showHighlight;
     private static Point[][] mat;
 
     // Swing components
@@ -60,8 +60,8 @@ public class TerrainGUI {
     private static JSlider lumSlider;
     // Shows and adjust light (direction)
     private static JSlider lightSlider;
-    // Shows or hides boundary
-    private static JButton boundary;
+    // Shows or hides highlight
+    private static JButton highlight;
     // Reset fields to default values
     private static JButton reset;
     // Reapplies map generation to current field values
@@ -73,8 +73,6 @@ public class TerrainGUI {
     final static List<String> COLORS = Arrays.asList("Gray", "Red", "Green", "Blue");
     // TODO: preset rgb-values array corresponding to colors in COLORS
     final static List<String> MAP_TYPES = Arrays.asList("Points", "Mesh", "Terrain");
-    // TODO: doesn't quite work (figure out before implementing rotation)
-    final static Point persp = new Point(0,1,0);
     // Minimum and maximum values for sliders
     final static int MIN_SIZE = 0;
     final static int MAX_SIZE = 10;
@@ -139,7 +137,7 @@ public class TerrainGUI {
         JPanel buttons = new JPanel();
         buttons.setLayout(new FlowLayout());
         buttons.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-        buttons.add(boundary);
+        buttons.add(highlight);
         buttons.add(reapply);
         buttons.add(reset);
 
@@ -150,8 +148,11 @@ public class TerrainGUI {
     public static void initComponents() {
         // JComboBoxes
         algBox = new JComboBox<String>(ALGORITHMS.toArray(new String[0]));
+        algBox.setRenderer(new ComboBoxRenderer("ALGORITHM"));
         colorBox = new JComboBox<String>(COLORS.toArray(new String[0]));
+        colorBox.setRenderer(new ComboBoxRenderer("COLOR"));
         mapTypeBox = new JComboBox<String>(MAP_TYPES.toArray(new String[0]));
+        mapTypeBox.setRenderer(new ComboBoxRenderer("DISPLAY"));
 
         // JSliders (Shows and adjust respective fields)
         sizeSlider = new JSlider(MIN_SIZE, MAX_SIZE);
@@ -209,9 +210,9 @@ public class TerrainGUI {
         lightSlider.setMajorTickSpacing(45);
 
         // JButtons
-        boundary = new JButton("Boundary", new ImageIcon("buttonIcons/boundary.png"));
-        reapply = new JButton("Reapply", new ImageIcon("buttonIcons/reapply.png"));
-        reset = new JButton("Reset", new ImageIcon("buttonIcons/reset.png"));
+        highlight = new JButton("Highlight", new ImageIcon("icons/highlight.png"));
+        reapply = new JButton("Reapply", new ImageIcon("icons/reapply.png"));
+        reset = new JButton("Reset", new ImageIcon("icons/reset.png"));
     }
 
     // Initializes and sets state of sliders
@@ -238,8 +239,6 @@ public class TerrainGUI {
         
         // initial display
         initDisplay();
-        // displays map
-        display();
         // adds listeners (must be called after initDisplay() to prevent event firing)
         addListeners();
     }
@@ -249,8 +248,11 @@ public class TerrainGUI {
     public static void addListeners() {
         // combo boxes' listeners
         algBox.addActionListener(ae -> {
-            algorithm = ALGORITHMS.indexOf(algBox.getSelectedItem());
-            reapply();
+            int selAlg = ALGORITHMS.indexOf(algBox.getSelectedItem());
+            if (selAlg != algorithm) {
+                algorithm = selAlg;
+                reapply();
+            }
         });
         colorBox.addActionListener(ae -> {
             color = COLORS.indexOf(colorBox.getSelectedItem());
@@ -283,6 +285,7 @@ public class TerrainGUI {
         });
         phiSlider.addChangeListener(ce -> {
             phi = phiSlider.getValue();
+            setPhi();
             rotate();
             display();
         });
@@ -296,14 +299,26 @@ public class TerrainGUI {
             setLum();
             display();
         });
+        lightSlider.addChangeListener(ce -> {
+            double rad = lightSlider.getValue() / 180.0 * Math.PI;
+            light = new Point(Math.cos(rad), Math.sin(rad), 0);
+            setLight();
+            display();
+        });
 
         // buttons' listeners
+        highlight.addActionListener(ae -> {
+            if (showHighlight) showHighlight = false;
+            else showHighlight = true;
+            display();
+        });
         reapply.addActionListener(ae -> {
             reapply();
         });
         reset.addActionListener(ae -> {
             setDefaultGUI();
             initDisplay();
+            display();
         });
     }
 
@@ -315,19 +330,12 @@ public class TerrainGUI {
         display();
     }
 
-    // TODO: customs renderers for algorithm, color, and mapType (can use ImageIcon or something else?)
     // Displays intial or reset map (called by reset's Listener)
     public static void initDisplay() {
         // sets initial JComboBoxes display
-        if (algorithm != -1) algBox.setSelectedIndex(algorithm);
-        // custom renderer
-        else {}
-        if (color != -1) colorBox.setSelectedIndex(color);
-        // custom renderer
-        else {}
-        if (mapType != -1) mapTypeBox.setSelectedIndex(mapType);
-        // custom renderer
-        else {}
+        algBox.setSelectedIndex(algorithm);
+        colorBox.setSelectedIndex(color);
+        mapTypeBox.setSelectedIndex(mapType);
 
         // sets intial JSliders display
         // TODO: will need to add customColorSlider
@@ -345,8 +353,6 @@ public class TerrainGUI {
         setLight();
         // sets deafult phi
         setPhi();
-        // sets showBoundary
-        setShowBoundary();
         // initializes and sets matrix
         initMatrix();
         setMatrix();
@@ -358,32 +364,37 @@ public class TerrainGUI {
         setAlg();
         // rotates default phi and theta
         rotate();
+        // displays map
+        display();
     }
 
-    // Displays map (called by every Listener)
+    // Displays map (called by every listener)
     public static void display() {
-        if (mapType != -1) {
-            StdDraw.clear();
+        StdDraw.clear();
+        if (mapType != -1 && algorithm != -1 && color != -1) {
             if (mapType == 0) Display.displayPoints(mat);
             else if (mapType == 1) Display.displayMesh(mat);
             else Display.displayTerrain(mat);
-            StdDraw.show();
+            if (showHighlight) {
+                Display.displayAxes(phi, theta, size);
+                Display.displayBoundary(mat);
+            }
         }
+        StdDraw.show();
     }
 
-    // Initializes matrix (called by sizeSlider's Listener)
+    // Initializes matrix (called by sizeSlider's listener)
     // TODO: need to reapply algorithm after calling both initMatrix() and setMatrix() by sizeSlider
     public static void initMatrix() {
         mat = new Point[size][size];
     }
 
-    // Sets matrix (called by {sizeSlider, reapply}'s Listeners)
+    // Sets matrix (called by {sizeSlider, reapply}'s listeners)
     public static void setMatrix() {
         Transform.setMatrix(mat);
     }
-    
-    // TODO: add custon renderer when alg = -1 (Displays title ALGORITHM)
-    // Sets the algorithm (called by {algBox, sizeSlider, devSlider, reset}'s Listener)
+
+    // Sets the algorithm (called by {algBox, sizeSlider, devSlider, reset}'s listener)
     public static void setAlg() {
         if (algorithm != -1) {
             if (algorithm == 0) {
@@ -395,28 +406,27 @@ public class TerrainGUI {
         }
     }
 
-    // Sets the scale (called by {zoomSlider, sizeSlider}'s Listeners)
+    // Sets the scale (called by {zoomSlider, sizeSlider}'s listeners)
     public static void setScale() {
         StdDraw.setXscale(-0.7*size/zoom, 0.7*size/zoom);
         StdDraw.setYscale(-0.7*size/zoom, 0.7*size/zoom);
         StdDraw.setPenRadius(1.0/(size/zoom*20));
     }
 
-    // Sets luminance (called by lumSlider's Listener)
+    // Sets luminance (called by lumSlider's listener)
     public static void setLum() {
         Display.setLuminance(luminance);
     }
 
-    // Sets light (called by lightSlider's Lister)
+    // Sets light (called by lightSlider's listenerr)
     // Precond: field light is normalized
     public static void setLight() {
         Display.setLight(light);
     }
 
-    // Sets phi (called by phiSlider's Listener)
+    // Sets phi (called by phiSlider's listener)
     public static void setPhi() {
         Display.setPhi(phi);
-        
     }
 
     // Rotates phi degrees about the x-axis and theta degrees about z-axis (called by {phiSlider, thetaSlider}'s Listeners)
@@ -424,20 +434,14 @@ public class TerrainGUI {
         if (algorithm != -1) Transform.rotate(mat, phi, theta);
     }
 
-    // TODO: add custon renderer when alg = -1 (Displays title ALGORITHM)
-    // Sets color (called by colorBox's Listener)
+    // Sets color (called by colorBox's listener)
     public static void setColor() {
         if (color != -1) {
             Display.setColor(color);
         }
     }
 
-    // Sets showBoundary (called by boundary's Listener)
-    public static void setShowBoundary() {
-        Display.setShowBoundary(showBoundary);
-    }
-
-    // Sets default field values (called by reset's Listener and main())
+    // Sets default field values (called by reset's listener and main())
     public static void setDefaultGUI() {
         algorithm = -1;
         size = 33;
@@ -449,7 +453,7 @@ public class TerrainGUI {
         theta = 0; 
         luminance = 0.5;
         light = new Point(1, 0, 0);
-        showBoundary = true;
+        showHighlight = true;
     }
 
     // Called directly from TerrainMap.java and changes default values
@@ -465,7 +469,7 @@ public class TerrainGUI {
         theta = 0; 
         luminance = 0.5;
         light = new Point(0, 1, 0);
-        showBoundary = true;
+        showHighlight = true;
     }
     
     public static void main(String[] args) {

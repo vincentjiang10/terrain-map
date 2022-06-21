@@ -14,6 +14,7 @@ CLASSES = \
 	Display.java \
 	Transform.java \
 	Point.java \
+	ComboBoxRenderer.java \
 	MidpointDisplacement.java
 
 MAIN = TerrainGUI

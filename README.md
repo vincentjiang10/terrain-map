@@ -1,7 +1,7 @@
 ## Terrain-Map
 ### Project Description
 Include picture of standard perspective and default position
-- What has been done: talk in detail about the process of algorithm implementation, data structures, gui (J swing and awt frameworks, event handling, component design), graphics and animation (through double buffering process), console I/O, debugging & testing, git, etc. -> relate back to software design principles (search up and study some of these) used (perhaps OOP principles), clean and scalable code, coupling & decoupling, etc.
+- What has been done: talk in detail about the process of algorithm implementation, data structures, gui (J swing and awt frameworks, event handling, component design), graphics and animation (through double buffering process), console I/O, debugging & testing, git, etc. -> relate back to software design principles (search up and study some of these) used (perhaps OOP principles: inheritance with custom rendereres for comboBox and customColorSlider), clean and scalable code, coupling & decoupling, etc.
 - Add what has been accomplished, etc.
 
 ### Motivation
@@ -20,18 +20,16 @@ Include picture of standard perspective and default position
 - Talk about the JSwing components and what they do
 
 ### To Be Added
-- xyz axis on the screen
-- rotation about z-axis
-- makefile and testing it
-- "far away look" effect 
+- xyz axis on the screen (added to make rotation clearer - add fun fact about concave illusion)?
+- add preset terrain choice (dessert, etc?)
 - implement zoom-in and zoom-out button (resets canvas size after user selects a point on map (show clicked point with mouse event)) (Separate branch)
 - implement color slider + implmenting JSlider (Separate branch)
-- rotation about x-axis
-- animation upon rotation
-- makefile
 - other algorithms
 - add another md page for interesting bugs?
+- reformat and clean README.md
+- implement different things with mouseevent? (animation to change terrain?)
 - official documentation (look at other README.md) + testing
+- add warning about size and loading issues 
 
 ### Before Running the Program
 #### Prerequisites
@@ -45,7 +43,13 @@ NOTE: StdDraw library has been slightly modified: StdDraw.init() was modified to
 
 ### Running the Program
 - Describe option to use args[] or stdin
-- Rotation by 45 degrees is applied to default points (set by Point.java)
+- Rotation by 45 degrees about x-axis is applied to default points
 - TODO: modify this -> points are then mapped to the XZ plane. (Explain and show picture of 3D to 2D projection)
 
-Running is simple:
+#### Instructuins
+A makefile has been provided to simplify the compilation process. Simply copy and run the following commands into terminal one at a time:
+1. make
+2. make run or java TerrainGUI (to generate GUI)
+OR
+3. If you have values that you want to test out and would like the GUI to be set to these values upon running, running java TerrainMap or java TerrainMap (algorithm) (size) (color) (map type) (deviation) can also be options. Running java TerrainMap will ask for console inputs as arguments. Note: acceptable bounds will be set on inputs.
+4. Enjoy :)
