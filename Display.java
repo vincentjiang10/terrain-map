@@ -1,21 +1,30 @@
+import java.awt.Color;
+
 public class Display {
+    // TODO: if implementing color slider, change this to three separate values standing for rgb
     private static int color;
-    // persp represents a unit vector (norm = 1)
-    private static Point persp;
+    private static int r; 
+    private static int g;
+    private static int b;
+    // light represents a unit vector (norm = 1)
+    private static Point light;
+    private static double phi;
+    private static double sinPhi;
     // from 0 to 10
     private static double luminance;
+    private static boolean showHighlight;
     
     // Gets light element based on cross product of two vectors and then dot product the persp
     // The two vectors are v0 = p1-p0 and v1 = p2-p1
-    // Returns double from lightMin to 1 inclusive
+    // Returns double from luminance to 1 inclusive
     public static double getLight(Point p0, Point p1, Point p2) {
         // normal to v0 and v1 from cross product
-        double v0x = p1.getX() - p0.getX();
-        double v0y = p1.getY() - p0.getY();
-        double v0z = p1.getZ() - p0.getZ();
-        double v1x = p2.getX() - p1.getX();
-        double v1y = p2.getY() - p1.getY();
-        double v1z = p2.getZ() - p1.getZ();
+        double v0x = p1.subX(p0);
+        double v0y = p1.subY(p0);
+        double v0z = p1.subZ(p0);
+        double v1x = p2.subX(p1);
+        double v1y = p2.subY(p1);
+        double v1z = p2.subZ(p1);
         
         // v0 x v1 = normal vector to v0 and v1 
         double normX = v0y * v1z - v0z * v1y;
@@ -23,8 +32,8 @@ public class Display {
         double normZ = v0x * v1y - v0y * v1x;
         
         // dot product
-        double dot = (normX * persp.getX() + normY * persp.getY() + normZ * persp.getZ());
-        // normalized
+        double dot = (normX * light.getX() + normY * light.getY() + normZ * light.getZ());
+        // normalized, from -1 to 1
         dot /= Math.sqrt(normX * normX + normY * normY + normZ * normZ);
         // from 0 to 1
         dot = (dot+1)/2;
@@ -33,51 +42,104 @@ public class Display {
     }
 
     // Sets the minimum liminance to view map
-    public static void setLuminance(double lum) {
-        luminance = lum;
+    public static void setLuminance(double terLum) {
+        luminance = terLum;
     }
 
-    // Sets the color gradient for map (called from TerrainMap.java)
-    public static void setColor(int c) {
-        color = c;
+    // TODO: change this method when implementing color slider
+    // Sets the color gradient for map 
+    public static void setColor(int terColor) {
+        color = terColor;
     }
 
-    // Sets the perspective (called from TerrainMap.java)
-    // If p is not normalized, change to unit vector
-    public static void setPersp(Point p) {
-        double norm = Math.pow(p.getX(), 2) + Math.pow(p.getY(), 2) + Math.pow(p.getZ(), 2);
-        if (norm != 1) {
-            norm = Math.sqrt(norm);
-            p.set(p.getX()/norm, p.getY()/norm, p.getZ()/norm);
-        }
-        persp = p;
+    // Sets light direction
+    public static void setLight(Point terLight) {
+        light = terLight;
     }
 
-    // TODO: Adds 3D-look effect: Points farther away from persp will "attract" to the z-axis 
-    // (x-coord will shrink by a factor that decreases from 1 as distance increases)
-    public static void compress(Point[][] mat, Point persp) {
-        
+    // Sets phi
+    public static void setPhi(double terPhi) {
+        phi = terPhi;
+        sinPhi = Math.sin(phi/180*Math.PI);
     }
 
     // Pen color is dependent on z-coord and map (matrix) size
-    public static void setPenColor(double z, int size, double light) {
+    // TODO: if implementing color slider, change this
+    public static void setPenColor(double z, int size, int radius, double lightVal) {
         // from 0 to 1
         // TODO: try to get as close to having the full range (all z vals spread over 0 to 1)
         // Perhaps use the initalialized Points for help (will be set as fields)
-        double zVar = ((z+0.4*size)/(2*0.4*size));
+        double zVar = ((z+size-sinPhi*Math.abs(radius))/(2*size)); // TODO: fix this
         if (zVar > 1) zVar = 1;
         if (zVar < 0) zVar = 0;
 
         // gray
-        if (color == 0) StdDraw.setPenColor((int)(light * (zVar * 255/2 +70)), (int)(light * (zVar * 255/2 + 70)), (int)(light * (zVar * 255/2 + 70)));
+        if (color == 0) StdDraw.setPenColor((int)(lightVal * (zVar * 185 + 70)), (int)(lightVal * (zVar * 185 + 70)), (int)(lightVal * (zVar * 185 + 70)));
         // red
-        else if (color == 1) StdDraw.setPenColor((int)(light * (zVar * 100 + 155)), (int)(light * 50), (int)(light * 70));
+        else if (color == 1) StdDraw.setPenColor((int)(lightVal * (zVar * 100 + 155)), (int)(lightVal * 50), (int)(lightVal * 70));
         // green
-        else if (color == 2) StdDraw.setPenColor(0, (int)(light * (135 * zVar + 120)), (int)(light * (100 * zVar)));
+        else if (color == 2) StdDraw.setPenColor(0, (int)(lightVal * (135 * zVar + 120)), (int)(lightVal * (100 * zVar)));
         // blue
-        else StdDraw.setPenColor((int)(light * 50), (int)(light * (zVar * 100 + 100)), (int)(light * 255));
+        else StdDraw.setPenColor((int)(lightVal * 50), (int)(lightVal * (zVar * 100 + 100)), (int)(lightVal * 255));
     }
 
+    // Draws helper axes (axes relative to the terrain and not the canvas xyz axes)
+    // TODO: explain the above axes detail in README.md
+    public static void displayAxes(double phi, double theta, double size) {
+        double radPhi = phi/180*Math.PI; 
+        double sinPhi = Math.sin(radPhi);
+        double cosPhi = Math.cos(radPhi);
+        double radTheta = theta/180*Math.PI;
+        double sinTheta = Math.sin(radTheta);
+        double cosTheta = Math.cos(radTheta);
+
+        // original axes' directions (kept as unit vectors and represented as type Point):
+        // xAxis => <1,0,0> 
+        // yAxis => <0,1,0>
+        // zAxis => <0,0,1>
+        // after phi rotation 
+        Point xAxis = new Point(1, 0, 0);
+        Point yAxis = new Point(0, cosPhi, sinPhi);
+        Point zAxis = new Point(0, -sinPhi, cosPhi);
+        // after theta rotation
+        xAxis.set(cosTheta * xAxis.getX() - sinTheta * xAxis.getY(), sinTheta * xAxis.getX() + cosTheta * xAxis.getY(), xAxis.getZ());
+        yAxis.set(cosTheta * yAxis.getX() - sinTheta * yAxis.getY(), sinTheta * yAxis.getX() + cosTheta * yAxis.getY(), yAxis.getZ());
+        zAxis.set(cosTheta * zAxis.getX() - sinTheta * zAxis.getY(), sinTheta * zAxis.getX() + cosTheta * zAxis.getY(), zAxis.getZ());
+        // displaying axes
+        double penRadius = StdDraw.getPenRadius();
+        StdDraw.setPenRadius(1/500.0);
+        // making axes bolder
+        StdDraw.setPenColor(Color.RED);
+        StdDraw.line(0, 0, 0.5*size*xAxis.getX(), 0.5*size*xAxis.getZ());
+        StdDraw.setPenColor(Color.GREEN);
+        StdDraw.line(0, 0, 0.5*size*yAxis.getX(), 0.5*size*yAxis.getZ());
+        StdDraw.setPenColor(Color.BLUE);
+        StdDraw.line(0, 0, 0.5*size*zAxis.getX(), 0.5*size*zAxis.getZ());
+        StdDraw.show();
+        StdDraw.setPenRadius(penRadius);
+    }
+
+    // TODO: after fixing r,g, b, apply a brighter color of rgb as color here
+    // Draws the boundary (outline) of map
+    public static void displayBoundary(Point[][] mat) {
+        double penRadius = StdDraw.getPenRadius();
+        StdDraw.setPenRadius(1/500.0);
+        StdDraw.setPenColor(Color.YELLOW);
+        // TODO: draws square border for now: change to draw the edges in the future?
+        int len = mat.length;
+        Point p0 = mat[0][0];
+        Point p1 = mat[0][len-1];
+        Point p2 = mat[len-1][len-1];
+        Point p3 = mat[len-1][0];
+        StdDraw.line(p0.getX(), p0.getZ(), p1.getX(), p1.getZ());
+        StdDraw.line(p1.getX(), p1.getZ(), p2.getX(), p2.getZ());
+        StdDraw.line(p2.getX(), p2.getZ(), p3.getX(), p3.getZ());
+        StdDraw.line(p3.getX(), p3.getZ(), p0.getX(), p0.getZ());
+        StdDraw.show();
+        StdDraw.setPenRadius(penRadius);
+    }
+
+    // TODO: modify to display light
     // Draws points given in mat
     public static void displayPoints(Point[][] mat) {
         int len = mat.length;
@@ -88,7 +150,7 @@ public class Display {
                 Point p = mat[i][j];
                 double x = p.getX();
                 double z = p.getZ();
-                setPenColor(z-0.4*(j-shift), shift, 1);
+                setPenColor(z-sinPhi*(j-shift), shift, j-shift, 1);
                 StdDraw.point(x, z);
             }
         }
@@ -104,10 +166,9 @@ public class Display {
                 Point p = mat[i][j];
                 Point pUp = mat[i][j+1];
                 Point pRight = mat[i+1][j];
-                setPenColor(p.getZ() - 0.4*(j-shift), shift, getLight(p, pUp, pRight));
-                StdDraw.line(p.getX(), p.getZ(), pUp.getX(), pUp.getZ());
-                StdDraw.line(p.getX(), p.getZ(), pRight.getX(), pRight.getZ());
-                StdDraw.line(pRight.getX(), pRight.getZ(), pUp.getX(), pUp.getZ());
+                setPenColor(p.getZ() - sinPhi*(j-shift), shift, j-shift, getLight(p, pUp, pRight));
+                // draws triangle
+                StdDraw.polygon(new double[] {p.getX(), pUp.getX(), pRight.getX()}, new double[] {p.getZ(), pUp.getZ(), pRight.getZ()});
             }
         }        
         // connects last row and col
@@ -118,7 +179,7 @@ public class Display {
             Point p = mat[i][len-1];
             double pX = p.getX();
             double pZ = p.getZ();
-            setPenColor(prevZ - 0.4*(len-1-shift), shift, 1);
+            setPenColor(prevZ - sinPhi*(len-1-shift), shift, shift, 1);
             StdDraw.line(pX, pZ, prevX, prevZ);
             prevX = pX;
             prevZ = pZ;
@@ -127,23 +188,22 @@ public class Display {
             Point p = mat[len-1][j];
             double pX = p.getX();
             double pZ = p.getZ();
-            setPenColor(prevZ - 0.4*(j-shift), shift, 1);
+            setPenColor(prevZ - sinPhi*(j-shift), shift, j-shift, 1);
             StdDraw.line(pX, pZ, prevX, prevZ);
             prevX = pX;
             prevZ = pZ;
         }
     }
 
-    // TODO: Add persp generation (affects where the map starts and ends generating - related to i and j)
+    // TODO: Use phi to change terrain direction of generation (related to i and j) (if phi >= 0, vs if phi <0)
+    // Add two directions
     // Draws terrain generated by mat and persp
     public static void displayTerrain(Point[][] mat) {
         int len = mat.length;
         int shift = (len-1)/2;
 
-        // TODO: Top boundary outline
         // TODO: Boundary function?
         // TODO: Perhaps do something about points below boundary
-
 
         Point prev0;
         Point prev1;
@@ -157,11 +217,11 @@ public class Display {
                 Point curr1 = mat[i+1][j];
                 sumZ += curr0.getZ();
                 // fill first triangle (prev0, prev1, curr0)
-                setPenColor(sumZ/3 - 0.4*(j-shift), shift, getLight(prev0, prev1, curr0));
+                setPenColor(sumZ/3 - sinPhi*(j-shift), shift, j-shift, getLight(prev0, prev1, curr0));
                 StdDraw.filledPolygon(new double[] {prev0.getX(), prev1.getX(), curr0.getX()}, new double[] {prev0.getZ(), prev1.getZ(), curr0.getZ()});
                 sumZ -= prev0.getZ() - curr1.getZ();
                 // fill second triangle (prev1, curr0, curr1)
-                setPenColor(sumZ/3 - 0.4*(j-shift), shift, getLight(prev1, curr0, curr1));
+                setPenColor(sumZ/3 - sinPhi*(j-shift), shift, j-shift, getLight(curr0, prev1, curr1));
                 StdDraw.filledPolygon(new double[] {prev1.getX(), curr0.getX(), curr1.getX()}, new double[] {prev1.getZ(), curr0.getZ(), curr1.getZ()});
                 sumZ -= prev1.getZ();
                 // set prev0 to curr0 and prev1 to curr1
@@ -169,6 +229,5 @@ public class Display {
                 prev1 = curr1;
             }
         }
-        // TODO: Bottom boundary outline
     }
 }

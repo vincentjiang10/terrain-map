@@ -1,8 +1,10 @@
 ## Terrain-Map
 ### Project Description
 Include picture of standard perspective and default position
-- What has been done: talk in detail about the process of algorithm implementation, data structures, gui (J swing and event handling), console I/O, debugging, git, etc. -> relate back to software design principles used (perhaps OOP)
+- What has been done: talk in detail about the process of algorithm implementation, data structures, gui (J swing and awt frameworks, event handling, component design), graphics and animation (through double buffering process), console I/O, debugging & testing, git, etc. -> relate back to software design principles (search up and study some of these) used (perhaps OOP principles: inheritance with custom rendereres for comboBox and customColorSlider), clean and scalable code, coupling & decoupling, etc.
 - Add what has been accomplished, etc.
+
+### Motivation
 
 ### Algorithms Implemented
 
@@ -14,24 +16,26 @@ Include picture of standard perspective and default position
 - talk about rotation (calculations, how it's done?)
 - Note: although only the x and z coordinates are diplayed on the screen (3D projected onto 2D, specifically the XZ plane), the hidden y-value is used in creating the rotation effect
 
+### Features
+- Talk about the JSwing components and what they do
+
 ### To Be Added
-- rotation about z-axis
-- a command that bypasses console prompts and instead skips to GUI with default matrix
-- "far away look" effect 
-- implement zoom-in and zoom-out button (resets canvas size after user selects a point on map (show clicked point with mouse event))
-- use of swing and awt to make GUI (button to enable/disable double buffering)
-- rotation about x-axis
-- animation upon rotation
-- makefile 
+- xyz axis on the screen (added to make rotation clearer - add fun fact about concave illusion)?
+- add preset terrain choice (dessert, etc?)
+- implement zoom-in and zoom-out button (resets canvas size after user selects a point on map (show clicked point with mouse event)) (Separate branch)
+- implement color slider + implmenting JSlider (Separate branch)
 - other algorithms
 - add another md page for interesting bugs?
+- reformat and clean README.md
+- implement different things with mouseevent? (animation to change terrain?)
 - official documentation (look at other README.md) + testing
+- add warning about size and loading issues 
 
 ### Before Running the Program
 #### Prerequisites
 This project implements the StdDraw library (https://introcs.cs.princeton.edu/java/stdlib/javadoc/StdDraw.html), which uses built-in java libraries like java.awt and javax.swing. 
 
-NOTE: StdDraw library has been slightly modified to return abstracted JFrame (getFrame()). Additionally, init() was modified to add additional components other than the drawn map to main JFrame.
+NOTE: StdDraw library has been slightly modified: StdDraw.init() was modified to add additional components other than the drawn map to main JFrame as well as change the frame title. Additionally, the static initializer has been removed to prevent multiple calls to init().
 
 #### Note
 - Only gray, red, green, and blue can be set as pen color when running TerrainMap.java in console/terminal. Other colors will be available on the GUI.
@@ -39,7 +43,13 @@ NOTE: StdDraw library has been slightly modified to return abstracted JFrame (ge
 
 ### Running the Program
 - Describe option to use args[] or stdin
-- Rotation by 45 degrees is applied to default points (set by Point.java)
-- points are then mapped to plane z = zTilt*y
+- Rotation by 45 degrees about x-axis is applied to default points
+- TODO: modify this -> points are then mapped to the XZ plane. (Explain and show picture of 3D to 2D projection)
 
-Running is simple:
+#### Instructuins
+A makefile has been provided to simplify the compilation process. Simply copy and run the following commands into terminal one at a time:
+1. make
+2. make run or java TerrainGUI (to generate GUI)
+OR
+3. If you have values that you want to test out and would like the GUI to be set to these values upon running, running java TerrainMap or java TerrainMap (algorithm) (size) (color) (map type) (deviation) can also be options. Running java TerrainMap will ask for console inputs as arguments. Note: acceptable bounds will be set on inputs.
+4. Enjoy :)

@@ -67,6 +67,7 @@ import java.util.LinkedList;
 import java.util.TreeSet;
 import java.util.NoSuchElementException;
 import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -76,6 +77,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
+import javax.swing.border.BevelBorder;
 
 /**
  *  The {@code StdDraw} class provides a basic capability for
@@ -639,15 +641,12 @@ public final class StdDraw implements ActionListener, MouseListener, MouseMotion
     private StdDraw() { }
 
 
+    /** 
     // static initializer
     static {
         init();
     }
-
-    /** Returns the JFrame frame */
-    public static JFrame getFrame() {
-        return frame;
-    }
+    */
 
     /**
      * Sets the canvas (drawing area) to be 512-by-512 pixels.
@@ -715,13 +714,17 @@ public final class StdDraw implements ActionListener, MouseListener, MouseMotion
 
         draw.addMouseListener(std);
         draw.addMouseMotionListener(std);
+        draw.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
 
         panel = new JPanel(new FlowLayout());
         panel.add(draw);
-        JPanel components = new JPanel();
-        components.setLayout(new BoxLayout(components, BoxLayout.Y_AXIS));
-        TerrainGUI.initComponents(components);
-        panel.add(components);
+        JPanel components0 = new JPanel();
+        JPanel components1 = new JPanel();
+        components0.setLayout(new BoxLayout(components0, BoxLayout.Y_AXIS));
+        components1.setLayout(new BoxLayout(components1, BoxLayout.Y_AXIS));
+        TerrainGUI.addComponents(components0, components1);
+        panel.add(components0);
+        panel.add(components1);
         frame.add(panel);
 
         frame.addKeyListener(std);    // JLabel cannot get keyboard focus
@@ -729,13 +732,11 @@ public final class StdDraw implements ActionListener, MouseListener, MouseMotion
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);            // closes all windows
         // frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);      // closes only current window
-        frame.setTitle("Standard Draw");
+        frame.setTitle("Terrain Map");
         frame.setJMenuBar(createMenuBar());
         frame.pack();
         frame.requestFocusInWindow();
         frame.setVisible(true);
-
-        // frame.add(panel);
     }
 
     // create the menu bar (changed to private)

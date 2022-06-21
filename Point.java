@@ -1,5 +1,4 @@
 public class Point {
-    // remember to add documentation and comments later
     private double x;
     private double y;
     private double z;
@@ -26,19 +25,34 @@ public class Point {
         return z;
     }
 
-    // Gets average x-coords of 2 Points
-    public double avgX(Point p){
+    // Gets average x-coords between this and Point p
+    public double avgX(Point p) {
         return (x + p.getX())/2;
     }
 
-    // Gets average y-coords of 2 Points
-    public double avgY(Point p){
+    // Gets average y-coords between this and Point p
+    public double avgY(Point p) {
         return (y + p.getY())/2;
     }
 
-    // Gets average z-coords of 2 Points
-    public double avgZ(Point p){
+    // Gets average z-coords between this and Point p
+    public double avgZ(Point p) {
         return (z + p.getZ())/2;
+    }
+
+    // Gets x-coord difference between this and Point p
+    public double subX(Point p) {
+        return x - p.getX();
+    }
+
+    // Gets y-coord difference between this and Point p
+    public double subY(Point p) {
+        return y - p.getY();
+    }
+
+    // Gets z-coord difference between this and Point p
+    public double subZ(Point p) {
+        return z - p.getZ();
     }
 
     // Sets new x, y, and z coordinates
@@ -46,15 +60,5 @@ public class Point {
         this.x = x;
         this.y = y;
         this.z = z;
-    }
-
-    // Sets default coordinates of matrix
-    public static void setMatrix(Point[][] mat) {
-        int shift = (mat.length-1)/2;
-        for (int i = 0; i < mat.length; i++) {
-            for (int j = 0; j < mat.length; j++) {
-                mat[i][j] = new Point(i-shift, j-shift, 0.4*(j-shift));
-            }
-        }
     }
 }

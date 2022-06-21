@@ -10,7 +10,7 @@ public class MidpointDisplacement {
     private static double devCoef;
 
     // Computes noise 
-    public static double noiseZ() {
+    public static double noise() {
         return (1 - devCoef/2) + devCoef * Math.random();
     }
 
@@ -31,17 +31,15 @@ public class MidpointDisplacement {
     public static void setMatrix(Point[][] mat) {
         int len = mat.length;
         Point p0 = mat[0][0];
-        p0.set(p0.getX(), p0.getY(), p0.getZ() * noiseZ());
+        p0.set(p0.getX(), p0.getY(), len * (Math.random()-0.5) * noise()*0.8);
         Point p1 = mat[0][len-1];
-        p1.set(p1.getX(), p1.getY(), p1.getZ() * noiseZ());
+        p1.set(p1.getX(), p1.getY(), len * (Math.random()-0.5) * noise()*0.8);
         Point p2 = mat[len-1][0];
-        p2.set(p2.getX(), p2.getY(), p2.getZ() * noiseZ());
+        p2.set(p2.getX(), p2.getY(), len * (Math.random()-0.5) * noise()*0.8);
         Point p3 = mat[len-1][len-1];
-        p3.set(p3.getX(), p3.getY(), p3.getZ() * noiseZ());
+        p3.set(p3.getX(), p3.getY(), len * (Math.random()-0.5) * noise()*0.8);
         setMatrixHelper(mat, 0, 0, len-1, len-1);
     }
-
-    // Look at way to set boundary coordinates with some noise
     
     // Take average of all x, y, z + some noise (will be based on deviation and difference between coords)
     // (p0i, p0j) is lower left corner; (p1i, p1j) is upper right corner

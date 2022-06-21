@@ -6,10 +6,9 @@ import java.util.Scanner;
  */
 public class TerrainMap {
     final static int NUM_ARGS = 5;
-    // Better to get from TerrainGUI than vice versa due to event handling in GUI
-    final static String[] MAP_TYPES = TerrainGUI.MAP_TYPES;
-    final static String[] ALGORITHMS = TerrainGUI.ALGORITHMS;
+    final static String[] ALGORITHMS = {"Midpoint Displacement = 0", "Cellular Automata = 1", "Diamond Square = 2", "Perlin Noise = 3"};
     final static String[] COLORS = {"Gray = 0", "Red = 1", "Green = 2", "Blue = 3"};
+    final static String[] MAP_TYPES = {"Points = 0", "Mesh = 1", "Terrain = 2"};
     final static int MAX_SIZE = 10;
     final static int MAX_DEV = 10;
 
@@ -124,6 +123,7 @@ public class TerrainMap {
         System.out.println("Deviation: " + dev);
 
         // Call to GUI
-        new TerrainGUI("Terrain Map", algorithm, size, color, mapType, dev);
+        TerrainGUI.setTerrainGUI(algorithm, size, color, mapType, dev);
+        TerrainGUI.initGUI();
     }
 }

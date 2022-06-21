@@ -1,128 +1,479 @@
-import java.awt.*;
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+
+import java.util.Arrays;
+import java.util.Hashtable;
+import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.TitledBorder;
 
 /**
  * Calls on Display.java and Rotate.java based on Event
  */
 public class TerrainGUI {
-    // Implement JButtons to change color, size, dev, algorithm, and choose between points, mesh or terrain
-
-    final static String[] ALGORITHMS = {"Midpoint Displacement = 0", "Cellular Automata = 1", "Diamond Square = 2", "Perlin Noise = 3"};
-    final static String[] MAP_TYPES = {"Points = 0", "Mesh = 1", "Terrain = 2"};
-
     private static int algorithm;
-    private static int size; // NOTE: size button should display log_2(size-1)
+    private static int size; // NOTE: size slider should display log_2(size-1) => size should receive 2^(size display)+1
+    // TODO: add new customColor field (type int[3]) + add new customColorSlider (contains three sliders for rgb values) [Needs to be custom (extends JSlider - inheritance, etc.)]
     private static int color;
     private static int mapType;
-    private static double dev;
-
-    private static double phi = 0; // NOTE: may not need this, mouse event will automatically call on rotate with increment
-    private static double theta = 45; // correspond to rotation about z-axis
-    private static double luminance = 0.5;
-    // TODO: doesn't quite work (figure out before implementing rotation)
-    // Default perspective
-    private static Point persp = new Point(1,1,1);
-    private static String title; // NOTE: may not need this (or can be used for JPanel and Map info
+    private static int dev;
+    private static double zoom;
+    private static double phi; // NOTE: Mouse event will automatically call on rotate with increment
+    private static double theta; // correspond to rotation about z-axis (TODO: after Rotate.java is finished, call it in initGUI)
+    private static double luminance;
+    private static Point light;
+    private static boolean showHighlight;
     private static Point[][] mat;
 
     // Swing components
-    private static JFrame frame;
-    private static JTextArea textArea;
-    // Slider should zoom in and out of panel with displayed terrain
+    // Shows and adjusts algorithms
+    private static JComboBox<String> algBox;
+    // Shows and adjusts preset colors
+    // TODO: Perhaps change text to COLORS instead. Have an Array that contains color and a combo box that displays color (custom renderer)
+    private static JComboBox<String> colorBox;
+    // Shows and adjusts mapType
+    private static JComboBox<String> mapTypeBox;
+    // Shows and adjusts size
+    private static JSlider sizeSlider;
+    // Shows and adjusts dev
+    private static JSlider devSlider;
     // Zoom In/Out should call on set x-scale/y-scale (may need to call repaint());
+    // JSlider should zoom in and out of panel with displayed terrain
     // Later: Clicking a specific location and zooming in or out changes x and y-scales and then zooms
-    private static JSlider zoom;
-    // Slider should adjust luminance
-    private static JSlider brightness;
+    private static JSlider zoomSlider;
+    // Shows and adjusts phi
+    private static JSlider phiSlider;
+    // Shows and adjusts theta
+    private static JSlider thetaSlider;
+    // Shows and adjusts luminance 
+    private static JSlider lumSlider;
+    // Shows and adjust light (direction)
+    private static JSlider lightSlider;
+    // Shows or hides highlight
+    private static JButton highlight;
     // Reset fields to default values
-    private static JButton restart;
+    private static JButton reset;
+    // Reapplies map generation to current field values
+    private static JButton reapply;
+    // Shows and adjust custom colors
+    // TODO: add custom color slider
 
-    // Initializes JPanel components, which will be added to JPanel panel in StdDraw.init()
-    public static void initComponents(JPanel components) {
-        init();
-        components.add(textArea);
-    }
+    final static List<String> ALGORITHMS = Arrays.asList("Midpoint Displacement", "Cellular Automata", "Diamond Square", "Perlin Noise");
+    final static List<String> COLORS = Arrays.asList("Gray", "Red", "Green", "Blue");
+    // TODO: preset rgb-values array corresponding to colors in COLORS
+    final static List<String> MAP_TYPES = Arrays.asList("Points", "Mesh", "Terrain");
+    // Minimum and maximum values for sliders
+    final static int MIN_SIZE = 0;
+    final static int MAX_SIZE = 10;
+    final static int MIN_DEV = 0;
+    final static int MAX_DEV = 10;
+    final static int MIN_ZOOM = 0;
+    final static int MAX_ZOOM = 200;
+    final static int MIN_PHI = -90;
+    final static int MAX_PHI = 90;
+    final static int MIN_THETA = -180;
+    final static int MAX_THETA = 180;
+    final static int MIN_LUM = 0;
+    final static int MAX_LUM = 100;
+    final static int MIN_LIGHT = -180;
+    final static int MAX_LIGHT = 180;
 
-    // JTextField that displays map information
-    // NOTE: add more info that should be added
-    public static void setTextArea() {
-        // TODO: may want editor pane instead? (Can be used to change font)
-        textArea.append("Map Summary:\n");
-        String alg = ALGORITHMS[algorithm];
-        textArea.append("Algorithm: " + alg.substring(0, alg.length()-4) + "\n");
-        String mt = MAP_TYPES[mapType];
-        textArea.append("Map Type: " + mt.substring(0, mt.length()-4) + "\n");
-        textArea.append("Map Dimensions: " + size + " by " + size);
-    }
+    // Adds components to two subpanels added to JPanel in StdDraw.init()
+    public static void addComponents(JPanel components0, JPanel components1) {
+        components0.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED, Color.GRAY, Color.GRAY));
+        components1.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED, Color.GRAY, Color.GRAY));
+        // initializes to-be added components
+        initComponents();
 
-    // NOTE: All buttons should display either default or changed values upon constructor call
-    // Initializes GUI setup
-    public static void init() {
-        // sets buttons and sliders to following values (retrieved from TerrainMap.java)
-        // all buttons call on either displayPoints, Mesh or Terrain upon change
+        // new JPanel containing JComboBoxes
+        JPanel comboBoxes = new JPanel();
+        comboBoxes.setLayout(new BoxLayout(comboBoxes, BoxLayout.Y_AXIS));
+        comboBoxes.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+        comboBoxes.add(algBox);
+        comboBoxes.add(colorBox);
+        comboBoxes.add(mapTypeBox);
 
-        // JTextField (displays map information)
-        textArea = new JTextArea();
-        textArea.setEditable(false);
-        setTextArea();
-    }
+        components0.add(comboBoxes);
+        // adds invisible component (space)
+        components0.add(Box.createVerticalStrut(20));
 
-    // Constructors
-    // TODO: update
+        // new JPanel containing JSliders
+        JPanel sliders0 = new JPanel();
+        sliders0.setLayout(new BoxLayout(sliders0, BoxLayout.Y_AXIS));
+        sliders0.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+        sliders0.add(sizeSlider);
+        sliders0.add(devSlider);
+        sliders0.add(zoomSlider);
+        sliders0.add(phiSlider);
+        sliders0.add(thetaSlider);
 
-    // Called directly from TerrainMap.java and changes default values
-    public TerrainGUI(String title, int algorithm, int size, int color, int mapType, int dev) {
-        mat = new Point[size][size];
-        this.algorithm = algorithm;
-        this.size = size;
-        this.color = color;
-        this.mapType = mapType;
-        this.dev = (double) dev;
+        components0.add(sliders0);
         
-        Point.setMatrix(mat);
-        if (algorithm == 0) {
-            MidpointDisplacement.setDev(dev/10.0);
-            MidpointDisplacement.setMatrix(mat);
+        // TODO: sliders1.add(customColorSlider)
+        // components1.add(Box.createVerticalStrut(20))
+
+        // new JPanel and other JSliders
+        JPanel sliders1 = new JPanel();
+        sliders1.setLayout(new BoxLayout(sliders1, BoxLayout.Y_AXIS));
+        sliders1.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+        sliders1.add(lumSlider);
+        sliders1.add(lightSlider);
+
+        components1.add(sliders1);
+        components1.add(Box.createVerticalStrut(20));
+
+        // new JPanel containing Jbuttons
+        JPanel buttons = new JPanel();
+        buttons.setLayout(new FlowLayout());
+        buttons.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+        buttons.add(highlight);
+        buttons.add(reapply);
+        buttons.add(reset);
+
+        components1.add(buttons);
+    }
+
+    // Initializes GUI setup 
+    public static void initComponents() {
+        // JComboBoxes
+        algBox = new JComboBox<String>(ALGORITHMS.toArray(new String[0]));
+        algBox.setRenderer(new ComboBoxRenderer("ALGORITHM"));
+        colorBox = new JComboBox<String>(COLORS.toArray(new String[0]));
+        colorBox.setRenderer(new ComboBoxRenderer("COLOR"));
+        mapTypeBox = new JComboBox<String>(MAP_TYPES.toArray(new String[0]));
+        mapTypeBox.setRenderer(new ComboBoxRenderer("DISPLAY"));
+
+        // JSliders (Shows and adjust respective fields)
+        sizeSlider = new JSlider(MIN_SIZE, MAX_SIZE);
+        Hashtable<Integer, JLabel> sizeLabels = new Hashtable<>();
+        for (int i = 0; i <= 10; i++) {
+            sizeLabels.put(i, new JLabel(Integer.toString(i)));
         }
+        initSlider(sizeSlider, "Size", sizeLabels);
+        sizeSlider.setMajorTickSpacing(1);
+        sizeSlider.setSnapToTicks(true);
 
-        // Intial display
-        // Setting canvas size (TODO: modify this?)
+        devSlider = new JSlider(MIN_DEV, MAX_DEV);
+        // devLabels = sizeLabels
+        initSlider(devSlider, "Deviation", sizeLabels);
+        devSlider.setMajorTickSpacing(1);
+        devSlider.setSnapToTicks(true);
+
+        // nonlinear scale from 0 to 1, then linear from 1 to 2
+        // if zoom >= 1, then val = 100*zoom
+        // else val = 200 - 100/zoom
+        zoomSlider = new JSlider(MIN_ZOOM, MAX_ZOOM);
+        Hashtable<Integer, JLabel> zoomLabels = new Hashtable<>();
+        zoomLabels.put(0, new JLabel("50%"));
+        zoomLabels.put(100, new JLabel("100%"));
+        zoomLabels.put(200, new JLabel("200%"));
+        initSlider(zoomSlider, "Zoom", zoomLabels);
+        
+        phiSlider = new JSlider(MIN_PHI, MAX_PHI);
+        Hashtable<Integer, JLabel> phiLabels = new Hashtable<>();
+        phiLabels.put(-90, new JLabel("-90°"));
+        phiLabels.put(0, new JLabel("0°"));
+        phiLabels.put(90, new JLabel("90°"));
+        initSlider(phiSlider, "Phi (X-axis Rotation)", phiLabels);
+        phiSlider.setMajorTickSpacing(45);
+
+        thetaSlider = new JSlider(MIN_THETA, MAX_THETA);
+        Hashtable<Integer, JLabel> thetaLabels = new Hashtable<>();
+        thetaLabels.put(-180, new JLabel("-180°"));
+        thetaLabels.put(0, new JLabel("0°"));
+        thetaLabels.put(180, new JLabel("180°"));
+        initSlider(thetaSlider, "Theta (Z-axis Rotation)", thetaLabels);
+        thetaSlider.setMajorTickSpacing(45);
+        
+        lumSlider = new JSlider(MIN_LUM, MAX_LUM);
+        Hashtable<Integer, JLabel> lumLabels = new Hashtable<>();
+        for (int i = 0; i <= 100; i += 10) {
+            lumLabels.put(i, new JLabel(Integer.toString(i)));
+        }
+        initSlider(lumSlider, "Luminance", lumLabels);
+        lumSlider.setMajorTickSpacing(10);
+
+        lightSlider = new JSlider(MIN_LIGHT, MAX_LIGHT);
+        // lightLabels = thetaLabels
+        initSlider(lightSlider, "Light Angle", thetaLabels);
+        lightSlider.setMajorTickSpacing(45);
+
+        // JButtons
+        highlight = new JButton("Highlight", new ImageIcon("icons/highlight.png"));
+        reapply = new JButton("Reapply", new ImageIcon("icons/reapply.png"));
+        reset = new JButton("Reset", new ImageIcon("icons/reset.png"));
+    }
+
+    // Initializes and sets state of sliders
+    public static void initSlider(JSlider slider, String title, Hashtable<Integer, JLabel> labels) {
+        TitledBorder titledBorder = BorderFactory.createTitledBorder(title);
+        titledBorder.setTitleJustification(TitledBorder.CENTER);
+        slider.setBorder(titledBorder);
+        slider.setPaintTicks(true);
+        slider.setLabelTable(labels);
+        slider.setPaintLabels(true);
+        slider.setPreferredSize(new Dimension(300, 70));
+    }
+
+    // TODO: Describe in detail in README.md
+    // Following methods take no argument for simplicity and due to event listeners keeping track of class state (field values).
+    // Class state must be maintained for features like reapply and [TODO: add other features needing class state] to work. 
+    // Additionally, this supports code scalability.
+
+    // Initializes Terrain GUI
+    public static void initGUI() {
+        // intializes StdDraw (calls StdDraw.init(), which calls addComponents())
         StdDraw.setCanvasSize(600, 600);
-
-        // (TODO: may want to delete frame since it is not used a lot? Title can be changed in StdDraw.java)
-        // Setting title (getFrame() needs to be called after setCanvasSize())
-        frame = StdDraw.getFrame();
-        // (TODO: may want to delete?) panel = StdDraw.getPanel();
-        frame.setTitle(title);
-
-        // Setting scale
-        StdDraw.setXscale(-0.8*size, 0.8*size);
-        StdDraw.setYscale(-0.5*size, 0.5*size);
-
-        // Setting pen radius (dependent on mat size)
-        StdDraw.setPenRadius(1.0/(size*20));
-
-        // Setting default perspective 
-        Display.setPersp(persp);
-        // Setting default luminance 
-        Display.setLuminance(luminance);
-        // Setting color 
-        Display.setColor(color);
-
-        // Displaying map (upon running program)
         StdDraw.enableDoubleBuffering();
-        if (mapType == 0) Display.displayPoints(mat);
-        else if (mapType == 1) Display.displayMesh(mat);
-        else Display.displayTerrain(mat);
+        
+        // initial display
+        initDisplay();
+        // adds listeners (must be called after initDisplay() to prevent event firing)
+        addListeners();
+    }
+
+    // TODO: finish + simplify and group similar code
+    // Adds event listeners to Swing components
+    public static void addListeners() {
+        // combo boxes' listeners
+        algBox.addActionListener(ae -> {
+            int selAlg = ALGORITHMS.indexOf(algBox.getSelectedItem());
+            if (selAlg != algorithm) {
+                algorithm = selAlg;
+                reapply();
+            }
+        });
+        colorBox.addActionListener(ae -> {
+            color = COLORS.indexOf(colorBox.getSelectedItem());
+            setColor();
+            display();
+        });
+        mapTypeBox.addActionListener(ae -> {
+            mapType = MAP_TYPES.indexOf(mapTypeBox.getSelectedItem());
+            display();
+        });
+
+        // sliders' listeners
+        sizeSlider.addChangeListener(ce -> {
+            size = (int) Math.pow(2, sizeSlider.getValue()) + 1;
+            setScale();
+            initMatrix();
+            reapply();
+        });
+        devSlider.addChangeListener(ce -> {
+            dev = devSlider.getValue();
+            setAlg();
+            display();
+        });
+        zoomSlider.addChangeListener(ce -> {
+            int zoomVal = zoomSlider.getValue();
+            if (zoomVal >= 100) zoom = zoomVal/100.0;
+            else zoom = 100.0/(200-zoomVal);
+            setScale();
+            display();
+        });
+        phiSlider.addChangeListener(ce -> {
+            phi = phiSlider.getValue();
+            setPhi();
+            rotate();
+            display();
+        });
+        thetaSlider.addChangeListener(ce -> {
+            theta = thetaSlider.getValue();
+            rotate();
+            display();
+        });
+        lumSlider.addChangeListener(ce -> {
+            luminance = lumSlider.getValue()/100.0;
+            setLum();
+            display();
+        });
+        lightSlider.addChangeListener(ce -> {
+            double rad = lightSlider.getValue() / 180.0 * Math.PI;
+            light = new Point(Math.cos(rad), Math.sin(rad), 0);
+            setLight();
+            display();
+        });
+
+        // buttons' listeners
+        highlight.addActionListener(ae -> {
+            if (showHighlight) showHighlight = false;
+            else showHighlight = true;
+            display();
+        });
+        reapply.addActionListener(ae -> {
+            reapply();
+        });
+        reset.addActionListener(ae -> {
+            setDefaultGUI();
+            initDisplay();
+            display();
+        });
+    }
+
+    // Rerenders (common action taken by event listeners)
+    public static void reapply() {
+        setMatrix();
+        setAlg();
+        rotate();
+        display();
+    }
+
+    // Displays intial or reset map (called by reset's Listener)
+    public static void initDisplay() {
+        // sets initial JComboBoxes display
+        algBox.setSelectedIndex(algorithm);
+        colorBox.setSelectedIndex(color);
+        mapTypeBox.setSelectedIndex(mapType);
+
+        // sets intial JSliders display
+        // TODO: will need to add customColorSlider
+        sizeSlider.setValue((int) (Math.log(size-1)/Math.log(2)));
+        devSlider.setValue(dev);
+        zoomSlider.setValue(zoom >= 1 ? 100 * (int) zoom : 200 - (int) (100/zoom));
+        phiSlider.setValue((int) phi);
+        thetaSlider.setValue((int) theta);
+        lumSlider.setValue((int) (100*luminance));
+        lightSlider.setValue((int) (0));
+
+        // sets default luminance 
+        setLum();
+        // sets default light
+        setLight();
+        // sets deafult phi
+        setPhi();
+        // initializes and sets matrix
+        initMatrix();
+        setMatrix();
+        // sets scale
+        setScale();
+        // sets color 
+        setColor();
+        // sets algorithm
+        setAlg();
+        // rotates default phi and theta
+        rotate();
+        // displays map
+        display();
+    }
+
+    // Displays map (called by every listener)
+    public static void display() {
+        StdDraw.clear();
+        if (mapType != -1 && algorithm != -1 && color != -1) {
+            if (mapType == 0) Display.displayPoints(mat);
+            else if (mapType == 1) Display.displayMesh(mat);
+            else Display.displayTerrain(mat);
+            if (showHighlight) {
+                Display.displayAxes(phi, theta, size);
+                Display.displayBoundary(mat);
+            }
+        }
         StdDraw.show();
     }
 
-    public TerrainGUI(String title) {
-        // Set default field values
-        this(title, -1, 33, 0, -1, 5);
+    // Initializes matrix (called by sizeSlider's listener)
+    // TODO: need to reapply algorithm after calling both initMatrix() and setMatrix() by sizeSlider
+    public static void initMatrix() {
+        mat = new Point[size][size];
+    }
+
+    // Sets matrix (called by {sizeSlider, reapply}'s listeners)
+    public static void setMatrix() {
+        Transform.setMatrix(mat);
+    }
+
+    // Sets the algorithm (called by {algBox, sizeSlider, devSlider, reset}'s listener)
+    public static void setAlg() {
+        if (algorithm != -1) {
+            if (algorithm == 0) {
+                MidpointDisplacement.setDev(dev/10.0);
+                MidpointDisplacement.setMatrix(mat);
+            }
+            // TODO: continue here
+            Transform.algMatrix(mat);
+        }
+    }
+
+    // Sets the scale (called by {zoomSlider, sizeSlider}'s listeners)
+    public static void setScale() {
+        StdDraw.setXscale(-0.7*size/zoom, 0.7*size/zoom);
+        StdDraw.setYscale(-0.7*size/zoom, 0.7*size/zoom);
+        StdDraw.setPenRadius(1.0/(size/zoom*20));
+    }
+
+    // Sets luminance (called by lumSlider's listener)
+    public static void setLum() {
+        Display.setLuminance(luminance);
+    }
+
+    // Sets light (called by lightSlider's listenerr)
+    // Precond: field light is normalized
+    public static void setLight() {
+        Display.setLight(light);
+    }
+
+    // Sets phi (called by phiSlider's listener)
+    public static void setPhi() {
+        Display.setPhi(phi);
+    }
+
+    // Rotates phi degrees about the x-axis and theta degrees about z-axis (called by {phiSlider, thetaSlider}'s Listeners)
+    public static void rotate() {
+        if (algorithm != -1) Transform.rotate(mat, phi, theta);
+    }
+
+    // Sets color (called by colorBox's listener)
+    public static void setColor() {
+        if (color != -1) {
+            Display.setColor(color);
+        }
+    }
+
+    // Sets default field values (called by reset's listener and main())
+    public static void setDefaultGUI() {
+        algorithm = -1;
+        size = 33;
+        color = -1;
+        mapType = -1;
+        dev = 5;
+        zoom = 1;
+        phi = 45; 
+        theta = 0; 
+        luminance = 0.5;
+        light = new Point(1, 0, 0);
+        showHighlight = true;
+    }
+
+    // Called directly from TerrainMap.java and changes default values
+    public static void setTerrainGUI(int terAlgorithm, int terSize, int terColor, int terMapType, int terDeviation) {
+        algorithm = terAlgorithm;
+        size = terSize;
+        // TODO: if doing color slider, change rgb values to preset depending on terColor (will need a function to do so)
+        color = terColor;
+        mapType = terMapType;
+        dev = terDeviation;
+        zoom = 1;
+        phi = 45; 
+        theta = 0; 
+        luminance = 0.5;
+        light = new Point(0, 1, 0);
+        showHighlight = true;
     }
     
     public static void main(String[] args) {
-        new TerrainGUI("Terrain Map");
+        setDefaultGUI();
+        initGUI();
     }
 }
