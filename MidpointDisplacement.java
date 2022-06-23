@@ -5,6 +5,8 @@
  * 3. Set the center of the square to the average of edge midpoints with some random change
  * 4. Recurse on the four smaller squares
  */
+
+ // TODO: perhaps include all algorithms here if they are familiar? Group into a single class with algorithms as subclasses?
 public class MidpointDisplacement {
     // Deviation: used in noise generation and randomness
     private static double devCoef;

@@ -1,4 +1,6 @@
+import java.awt.Canvas;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 
@@ -13,8 +15,10 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.ListCellRenderer;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.TitledBorder;
 
@@ -23,14 +27,13 @@ import javax.swing.border.TitledBorder;
  */
 public class TerrainGUI {
     private static int algorithm;
-    private static int size; // NOTE: size slider should display log_2(size-1) => size should receive 2^(size display)+1
-    // TODO: add new customColor field (type int[3]) + add new customColorSlider (contains three sliders for rgb values) [Needs to be custom (extends JSlider - inheritance, etc.)]
+    private static int size;
     private static int color;
     private static int mapType;
     private static int dev;
     private static double zoom;
-    private static double phi; // NOTE: Mouse event will automatically call on rotate with increment
-    private static double theta; // correspond to rotation about z-axis (TODO: after Rotate.java is finished, call it in initGUI)
+    private static double phi; 
+    private static double theta; 
     private static double luminance;
     private static Point light;
     private static boolean showHighlight;
@@ -40,7 +43,6 @@ public class TerrainGUI {
     // Shows and adjusts algorithms
     private static JComboBox<String> algBox;
     // Shows and adjusts preset colors
-    // TODO: Perhaps change text to COLORS instead. Have an Array that contains color and a combo box that displays color (custom renderer)
     private static JComboBox<String> colorBox;
     // Shows and adjusts mapType
     private static JComboBox<String> mapTypeBox;
@@ -66,12 +68,9 @@ public class TerrainGUI {
     private static JButton reset;
     // Reapplies map generation to current field values
     private static JButton reapply;
-    // Shows and adjust custom colors
-    // TODO: add custom color slider
 
     final static List<String> ALGORITHMS = Arrays.asList("Midpoint Displacement", "Cellular Automata", "Diamond Square", "Perlin Noise");
     final static List<String> COLORS = Arrays.asList("Gray", "Red", "Green", "Blue");
-    // TODO: preset rgb-values array corresponding to colors in COLORS
     final static List<String> MAP_TYPES = Arrays.asList("Points", "Mesh", "Terrain");
     // Minimum and maximum values for sliders
     final static int MIN_SIZE = 0;
@@ -120,8 +119,9 @@ public class TerrainGUI {
 
         components0.add(sliders0);
         
-        // TODO: sliders1.add(customColorSlider)
-        // components1.add(Box.createVerticalStrut(20))
+        // adds JPanel with custom color slider
+        components1.add(new CustomColorSliderPanel());
+        components1.add(Box.createVerticalStrut(20));
 
         // new JPanel and other JSliders
         JPanel sliders1 = new JPanel();
@@ -228,7 +228,7 @@ public class TerrainGUI {
 
     // TODO: Describe in detail in README.md
     // Following methods take no argument for simplicity and due to event listeners keeping track of class state (field values).
-    // Class state must be maintained for features like reapply and [TODO: add other features needing class state] to work. 
+    // Class state must be maintained for features like reapply and rotate to work. 
     // Additionally, this supports code scalability.
 
     // Initializes Terrain GUI
@@ -243,7 +243,6 @@ public class TerrainGUI {
         addListeners();
     }
 
-    // TODO: finish + simplify and group similar code
     // Adds event listeners to Swing components
     public static void addListeners() {
         // combo boxes' listeners
@@ -260,21 +259,29 @@ public class TerrainGUI {
             display();
         });
         mapTypeBox.addActionListener(ae -> {
-            mapType = MAP_TYPES.indexOf(mapTypeBox.getSelectedItem());
-            display();
+            int selMapType = MAP_TYPES.indexOf(mapTypeBox.getSelectedItem());
+            if (selMapType != mapType) {
+                mapType = selMapType;
+                display();
+            }
         });
 
         // sliders' listeners
         sizeSlider.addChangeListener(ce -> {
-            size = (int) Math.pow(2, sizeSlider.getValue()) + 1;
-            setScale();
-            initMatrix();
-            reapply();
+            int sizeVal = (int) Math.pow(2, sizeSlider.getValue()) + 1;
+            if (sizeVal != size) {
+                size = sizeVal;
+                setScale();
+                initMatrix();
+                reapply();
+            }
         });
         devSlider.addChangeListener(ce -> {
-            dev = devSlider.getValue();
-            setAlg();
-            display();
+            int devVal = devSlider.getValue();
+            if (devVal != dev) {
+                dev = devVal;
+                reapply();
+            }
         });
         zoomSlider.addChangeListener(ce -> {
             int zoomVal = zoomSlider.getValue();
@@ -338,7 +345,6 @@ public class TerrainGUI {
         mapTypeBox.setSelectedIndex(mapType);
 
         // sets intial JSliders display
-        // TODO: will need to add customColorSlider
         sizeSlider.setValue((int) (Math.log(size-1)/Math.log(2)));
         devSlider.setValue(dev);
         zoomSlider.setValue(zoom >= 1 ? 100 * (int) zoom : 200 - (int) (100/zoom));
@@ -371,7 +377,7 @@ public class TerrainGUI {
     // Displays map (called by every listener)
     public static void display() {
         StdDraw.clear();
-        if (mapType != -1 && algorithm != -1 && color != -1) {
+        if (mapType != -1 && algorithm != -1) {
             if (mapType == 0) Display.displayPoints(mat);
             else if (mapType == 1) Display.displayMesh(mat);
             else Display.displayTerrain(mat);
@@ -384,7 +390,6 @@ public class TerrainGUI {
     }
 
     // Initializes matrix (called by sizeSlider's listener)
-    // TODO: need to reapply algorithm after calling both initMatrix() and setMatrix() by sizeSlider
     public static void initMatrix() {
         mat = new Point[size][size];
     }
@@ -434,10 +439,26 @@ public class TerrainGUI {
         if (algorithm != -1) Transform.rotate(mat, phi, theta);
     }
 
-    // Sets color (called by colorBox's listener)
+    // Sets rgb values dependent on preset colors in colorBox (called by colorBox's listener)
+    // Note: colors are set to light to provide light and height (z-coord) contrast
     public static void setColor() {
         if (color != -1) {
-            Display.setColor(color);
+            if (color == 0) {
+                // GRAY
+                Display.setColor(204, 204, 204);
+            }
+            else if (color == 1) {
+                // RED
+                Display.setColor(255, 102, 102);
+            }
+            else if (color == 2) {
+                // GREEN
+                Display.setColor(102, 255, 102);
+            }
+            else {
+                // BLUE
+                Display.setColor(51, 204, 255);
+            }
         }
     }
 
@@ -460,7 +481,6 @@ public class TerrainGUI {
     public static void setTerrainGUI(int terAlgorithm, int terSize, int terColor, int terMapType, int terDeviation) {
         algorithm = terAlgorithm;
         size = terSize;
-        // TODO: if doing color slider, change rgb values to preset depending on terColor (will need a function to do so)
         color = terColor;
         mapType = terMapType;
         dev = terDeviation;
@@ -475,5 +495,133 @@ public class TerrainGUI {
     public static void main(String[] args) {
         setDefaultGUI();
         initGUI();
+    }
+}
+
+// Renderer used by comboBox components
+class ComboBoxRenderer extends JLabel implements ListCellRenderer<String> {
+    private Color defaultBackgroundColor = Color.LIGHT_GRAY;
+    private String title;
+
+    public ComboBoxRenderer(String title) {
+        setOpaque(true);
+        this.title = title;
+    }
+
+    @Override
+    // Gets JLabel with selected icon and text
+    public Component getListCellRendererComponent(JList<? extends String> list, String value, int index, boolean isSelected, boolean cellHasFocus) {
+        setBackground(list.getBackground());
+        if (isSelected) setBackground(defaultBackgroundColor);
+        if (index == -1 && value == null) {
+            setIcon(null);
+            setText(title);
+        }
+        else {
+            setIcon(new ImageIcon("icons/" + value + ".png"));
+            setText(value);
+        }
+        return this;
+    }
+}
+
+// Custom color slider panel
+class CustomColorSliderPanel extends JPanel {
+    // JPanel with rgb sliders
+    JPanel rgbSliders = new JPanel();
+    JSlider rSlider = new JSlider(0, 255, 128);
+    JSlider gSlider = new JSlider(0, 255, 128);
+    JSlider bSlider = new JSlider(0, 255, 128);
+    // JPanel with canvas and button
+    JPanel colorPanel = new JPanel();
+    // Canvas to show color
+    ColorDisplay colorDisplay = new ColorDisplay();
+    // JButton to apply color to canvas
+    JButton apply = new JButton("Apply");
+    int r = 128; 
+    int g = 128; 
+    int b = 128;
+
+    public CustomColorSliderPanel() {
+        setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+        setPanels();
+        addComponents();
+        add(rgbSliders);
+        add(colorPanel);
+        colorDisplay.setBackgroundColor();
+    }
+
+    // sets JPanels
+    public void setPanels() {
+        rgbSliders.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+        rgbSliders.setLayout(new BoxLayout(rgbSliders, BoxLayout.Y_AXIS));
+        colorPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+        colorPanel.setLayout(new BoxLayout(colorPanel, BoxLayout.Y_AXIS));
+    }
+
+    // adds rgb sliders
+    public void addComponents() {
+        setRGBSliders();
+        addListeners();
+        rgbSliders.add(rSlider);
+        rgbSliders.add(gSlider);
+        rgbSliders.add(bSlider);
+        colorPanel.add(colorDisplay);
+        colorPanel.add(Box.createVerticalStrut(20));
+        apply.setAlignmentX(JButton.CENTER_ALIGNMENT);
+        colorPanel.add(apply);
+    }
+
+    // sets rgb sliders 
+    public void setRGBSliders() {
+        Hashtable<Integer, JLabel> rgbLabels = new Hashtable<>();
+        rgbLabels.put(0, new JLabel("0"));
+        rgbLabels.put(255, new JLabel("255"));
+        TerrainGUI.initSlider(rSlider, "Red", rgbLabels);
+        TerrainGUI.initSlider(gSlider, "Green", rgbLabels);
+        TerrainGUI.initSlider(bSlider, "Blue", rgbLabels);
+        rSlider.setPreferredSize(new Dimension(200, 70));
+        gSlider.setPreferredSize(new Dimension(200, 70));
+        bSlider.setPreferredSize(new Dimension(200, 70));
+    }
+
+    // adds rgb listeners
+    public void addListeners() {
+        rSlider.addChangeListener(ce -> {
+            int rVal = rSlider.getValue();
+            if (rVal != r) {
+                r = rVal;
+                colorDisplay.setBackgroundColor();
+            }
+        });
+        gSlider.addChangeListener(ce -> {
+            int gVal = gSlider.getValue();
+            if (gVal != g) {
+                g = gVal;
+                colorDisplay.setBackgroundColor();
+            }
+        });
+        bSlider.addChangeListener(ce -> {
+            int bVal = bSlider.getValue();
+            if (bVal != b) {
+                b = bVal;
+                colorDisplay.setBackgroundColor();
+            }
+        });
+        apply.addActionListener(ae -> {
+            Display.setColor(r, g, b);
+            TerrainGUI.display();
+        });
+    }
+
+    class ColorDisplay extends Canvas {
+        public ColorDisplay() {
+            setSize(80, 80);
+            setBackgroundColor();
+        }
+        
+        public void setBackgroundColor() {
+            setBackground(new Color(r, g, b));
+        }
     }
 }

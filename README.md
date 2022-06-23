@@ -9,7 +9,7 @@ Include picture of standard perspective and default position
 ### Algorithms Implemented
 
 ### Illusions and Effects
-- talk about "far away look" in detail
+- talk about "far away look" in detail (one-point perspective)
 - talk about how to make it look "3D"
 - talk about light implementation (setting a minimum to getLight() output in Display.java)
 - talk about perspective and lighting (normal calculation, etc)
@@ -46,7 +46,7 @@ NOTE: StdDraw library has been slightly modified: StdDraw.init() was modified to
 - Rotation by 45 degrees about x-axis is applied to default points
 - TODO: modify this -> points are then mapped to the XZ plane. (Explain and show picture of 3D to 2D projection)
 
-#### Instructuins
+#### Instructions
 A makefile has been provided to simplify the compilation process. Simply copy and run the following commands into terminal one at a time:
 1. make
 2. make run or java TerrainGUI (to generate GUI)
