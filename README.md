@@ -8,7 +8,7 @@ The primary process in generating terrain lies in applying the terrain generatio
 - [One-point perspective](Display.java) is applied to the matrix to give the terrain an illusion of depth
 - [Luminance](Display.java) is achieved by setting a lower bound on rgb values of color to be set on terrain.
 - [Light direction and angle](Display.java) is implemented by calculating the surface normal to a triangle made by three adjacent Points in the main Point[][] matrix and calculating the dot product between this normal and the light vector represented as a Point.
-- Rotation about the x and z axes is done by applying [rotation matrices](Transform.java) on the main Point[][] matrix (Note: although only the x and z coordinates are diplayed on the screen, the hidden y-value is used in creating the rotation effect)
+- [Rotation](Transform.java) about the x and z axes is done by applying rotation matrices on the main Point[][] matrix (Note: although only the x and z coordinates are diplayed on the screen, the hidden y-value is used in creating the rotation effect)
 
 ### Example Runs
 Here are some examples runs for each algorithm:
