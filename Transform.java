@@ -1,3 +1,6 @@
+/**
+ * Class containing methods for transforming and modifying Point[][] matrix
+ */
 public class Transform {
     // contains matrix after algorithm application
     // Note: afterAlg is kept at the base phi and theta configuration (both set to 0)

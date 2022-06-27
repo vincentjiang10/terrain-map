@@ -55,10 +55,20 @@ public class Point {
         return z - p.getZ();
     }
 
+    // Gets dot product between this and vector <x,y,z>
+    public double dotProd(double x, double y, double z) {
+        return (this.x*x + this.y*y + this.z*z);
+    }
+
     // Sets new x, y, and z coordinates
     public void set(double x, double y, double z) {
         this.x = x;
         this.y = y;
+        this.z = z;
+    }
+
+    // Sets new z coordinates
+    public void setZ(double z) {
         this.z = z;
     }
 }

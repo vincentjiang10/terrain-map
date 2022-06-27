@@ -2,11 +2,11 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 /**
- * Console interaction - Takes in inputs from console and calls TerrainGUI.java
+ * Console interaction: Takes in inputs from console and calls TerrainGUI.java
  */
 public class TerrainMap {
     final static int NUM_ARGS = 5;
-    final static String[] ALGORITHMS = {"Midpoint Displacement = 0", "Cellular Automata = 1", "Diamond Square = 2", "Perlin Noise = 3"};
+    final static String[] ALGORITHMS = {"Midpoint Displacement = 0", "Diamond Square = 1", "Perlin Noise = 2"};
     final static String[] COLORS = {"Gray = 0", "Red = 1", "Green = 2", "Blue = 3"};
     final static String[] MAP_TYPES = {"Points = 0", "Mesh = 1", "Terrain = 2"};
     final static int MAX_SIZE = 10;

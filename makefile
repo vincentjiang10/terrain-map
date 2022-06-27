@@ -14,7 +14,7 @@ CLASSES = \
 	Display.java \
 	Transform.java \
 	Point.java \
-	MidpointDisplacement.java
+	Algorithms.java
 
 MAIN = TerrainGUI
 

@@ -23,7 +23,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.TitledBorder;
 
 /**
- * Calls on Display.java and Rotate.java based on Event
+ * Generates Terrain GUI: Calls on Display.java and Rotate.java based on Event
  */
 public class TerrainGUI {
     private static int algorithm;
@@ -36,7 +36,7 @@ public class TerrainGUI {
     private static double theta; 
     private static double luminance;
     private static Point light;
-    private static boolean showHighlight;
+    private static boolean showAxes;
     private static Point[][] mat;
 
     // Swing components
@@ -62,14 +62,16 @@ public class TerrainGUI {
     private static JSlider lumSlider;
     // Shows and adjust light (direction)
     private static JSlider lightSlider;
-    // Shows or hides highlight
-    private static JButton highlight;
+    // Shows or hides helper axes
+    private static JButton axes;
     // Reset fields to default values
     private static JButton reset;
     // Reapplies map generation to current field values
     private static JButton reapply;
 
-    final static List<String> ALGORITHMS = Arrays.asList("Midpoint Displacement", "Cellular Automata", "Diamond Square", "Perlin Noise");
+    // Shows and adjusts Perlin Noise variables
+    final static JPanel perlinPanel = Algorithms.getPerlinPanel();
+    final static List<String> ALGORITHMS = Arrays.asList("Midpoint Displacement", "Diamond Square", "Perlin Noise");
     final static List<String> COLORS = Arrays.asList("Gray", "Red", "Green", "Blue");
     final static List<String> MAP_TYPES = Arrays.asList("Points", "Mesh", "Terrain");
     // Minimum and maximum values for sliders
@@ -118,6 +120,9 @@ public class TerrainGUI {
         sliders0.add(thetaSlider);
 
         components0.add(sliders0);
+
+        // adds JPanel with Perlin Noise variables
+        components0.add(perlinPanel);
         
         // adds JPanel with custom color slider
         components1.add(new CustomColorSliderPanel());
@@ -137,7 +142,7 @@ public class TerrainGUI {
         JPanel buttons = new JPanel();
         buttons.setLayout(new FlowLayout());
         buttons.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-        buttons.add(highlight);
+        buttons.add(axes);
         buttons.add(reapply);
         buttons.add(reset);
 
@@ -160,13 +165,13 @@ public class TerrainGUI {
         for (int i = 0; i <= 10; i++) {
             sizeLabels.put(i, new JLabel(Integer.toString(i)));
         }
-        initSlider(sizeSlider, "Size", sizeLabels);
+        setSlider(sizeSlider, "Size", sizeLabels);
         sizeSlider.setMajorTickSpacing(1);
         sizeSlider.setSnapToTicks(true);
 
         devSlider = new JSlider(MIN_DEV, MAX_DEV);
         // devLabels = sizeLabels
-        initSlider(devSlider, "Deviation", sizeLabels);
+        setSlider(devSlider, "Deviation", sizeLabels);
         devSlider.setMajorTickSpacing(1);
         devSlider.setSnapToTicks(true);
 
@@ -178,14 +183,14 @@ public class TerrainGUI {
         zoomLabels.put(0, new JLabel("50%"));
         zoomLabels.put(100, new JLabel("100%"));
         zoomLabels.put(200, new JLabel("200%"));
-        initSlider(zoomSlider, "Zoom", zoomLabels);
+        setSlider(zoomSlider, "Zoom", zoomLabels);
         
         phiSlider = new JSlider(MIN_PHI, MAX_PHI);
         Hashtable<Integer, JLabel> phiLabels = new Hashtable<>();
         phiLabels.put(-90, new JLabel("-90°"));
         phiLabels.put(0, new JLabel("0°"));
         phiLabels.put(90, new JLabel("90°"));
-        initSlider(phiSlider, "Phi (X-axis Rotation)", phiLabels);
+        setSlider(phiSlider, "Phi (X-axis Rotation)", phiLabels);
         phiSlider.setMajorTickSpacing(45);
 
         thetaSlider = new JSlider(MIN_THETA, MAX_THETA);
@@ -193,7 +198,7 @@ public class TerrainGUI {
         thetaLabels.put(-180, new JLabel("-180°"));
         thetaLabels.put(0, new JLabel("0°"));
         thetaLabels.put(180, new JLabel("180°"));
-        initSlider(thetaSlider, "Theta (Z-axis Rotation)", thetaLabels);
+        setSlider(thetaSlider, "Theta (Z-axis Rotation)", thetaLabels);
         thetaSlider.setMajorTickSpacing(45);
         
         lumSlider = new JSlider(MIN_LUM, MAX_LUM);
@@ -201,22 +206,22 @@ public class TerrainGUI {
         for (int i = 0; i <= 100; i += 10) {
             lumLabels.put(i, new JLabel(Integer.toString(i)));
         }
-        initSlider(lumSlider, "Luminance", lumLabels);
+        setSlider(lumSlider, "Luminance", lumLabels);
         lumSlider.setMajorTickSpacing(10);
 
         lightSlider = new JSlider(MIN_LIGHT, MAX_LIGHT);
         // lightLabels = thetaLabels
-        initSlider(lightSlider, "Light Angle", thetaLabels);
+        setSlider(lightSlider, "Light Angle", thetaLabels);
         lightSlider.setMajorTickSpacing(45);
 
         // JButtons
-        highlight = new JButton("Highlight", new ImageIcon("icons/highlight.png"));
+        axes = new JButton("Axes", new ImageIcon("icons/axes.png"));
         reapply = new JButton("Reapply", new ImageIcon("icons/reapply.png"));
         reset = new JButton("Reset", new ImageIcon("icons/reset.png"));
     }
 
-    // Initializes and sets state of sliders
-    public static void initSlider(JSlider slider, String title, Hashtable<Integer, JLabel> labels) {
+    // Sets state of sliders
+    public static void setSlider(JSlider slider, String title, Hashtable<Integer, JLabel> labels) {
         TitledBorder titledBorder = BorderFactory.createTitledBorder(title);
         titledBorder.setTitleJustification(TitledBorder.CENTER);
         slider.setBorder(titledBorder);
@@ -226,7 +231,6 @@ public class TerrainGUI {
         slider.setPreferredSize(new Dimension(300, 70));
     }
 
-    // TODO: Describe in detail in README.md
     // Following methods take no argument for simplicity and due to event listeners keeping track of class state (field values).
     // Class state must be maintained for features like reapply and rotate to work. 
     // Additionally, this supports code scalability.
@@ -234,7 +238,7 @@ public class TerrainGUI {
     // Initializes Terrain GUI
     public static void initGUI() {
         // intializes StdDraw (calls StdDraw.init(), which calls addComponents())
-        StdDraw.setCanvasSize(600, 600);
+        StdDraw.setCanvasSize(700, 700);
         StdDraw.enableDoubleBuffering();
         
         // initial display
@@ -298,6 +302,7 @@ public class TerrainGUI {
         });
         thetaSlider.addChangeListener(ce -> {
             theta = thetaSlider.getValue();
+            setTheta();
             rotate();
             display();
         });
@@ -314,9 +319,9 @@ public class TerrainGUI {
         });
 
         // buttons' listeners
-        highlight.addActionListener(ae -> {
-            if (showHighlight) showHighlight = false;
-            else showHighlight = true;
+        axes.addActionListener(ae -> {
+            if (showAxes) showAxes = false;
+            else showAxes = true;
             display();
         });
         reapply.addActionListener(ae -> {
@@ -357,8 +362,10 @@ public class TerrainGUI {
         setLum();
         // sets default light
         setLight();
-        // sets deafult phi
+        // sets default phi
         setPhi();
+        // sets default theta
+        setTheta();
         // initializes and sets matrix
         initMatrix();
         setMatrix();
@@ -381,10 +388,7 @@ public class TerrainGUI {
             if (mapType == 0) Display.displayPoints(mat);
             else if (mapType == 1) Display.displayMesh(mat);
             else Display.displayTerrain(mat);
-            if (showHighlight) {
-                Display.displayAxes(phi, theta, size);
-                Display.displayBoundary(mat);
-            }
+            if (showAxes) Display.displayAxes(phi, theta, size);
         }
         StdDraw.show();
     }
@@ -401,14 +405,16 @@ public class TerrainGUI {
 
     // Sets the algorithm (called by {algBox, sizeSlider, devSlider, reset}'s listener)
     public static void setAlg() {
+        Algorithms.setAlg(algorithm);
         if (algorithm != -1) {
-            if (algorithm == 0) {
-                MidpointDisplacement.setDev(dev/10.0);
-                MidpointDisplacement.setMatrix(mat);
-            }
-            // TODO: continue here
+            if (algorithm == 2) perlinPanel.setVisible(true);
+            else perlinPanel.setVisible(false);
+            Algorithms.setDev(dev/10.0);
+            Algorithms.setMatrix(mat);
+            // keeps copy of transformed matrix
             Transform.algMatrix(mat);
         }
+        else perlinPanel.setVisible(false);
     }
 
     // Sets the scale (called by {zoomSlider, sizeSlider}'s listeners)
@@ -432,6 +438,11 @@ public class TerrainGUI {
     // Sets phi (called by phiSlider's listener)
     public static void setPhi() {
         Display.setPhi(phi);
+    }
+
+    // Sets theta (called by thetaSlider's listener)
+    public static void setTheta() {
+        Display.setTheta(theta);
     }
 
     // Rotates phi degrees about the x-axis and theta degrees about z-axis (called by {phiSlider, thetaSlider}'s Listeners)
@@ -474,7 +485,7 @@ public class TerrainGUI {
         theta = 0; 
         luminance = 0.5;
         light = new Point(1, 0, 0);
-        showHighlight = true;
+        showAxes = false;
     }
 
     // Called directly from TerrainMap.java and changes default values
@@ -489,7 +500,7 @@ public class TerrainGUI {
         theta = 0; 
         luminance = 0.5;
         light = new Point(0, 1, 0);
-        showHighlight = true;
+        showAxes = false;
     }
     
     public static void main(String[] args) {
@@ -528,24 +539,24 @@ class ComboBoxRenderer extends JLabel implements ListCellRenderer<String> {
 // Custom color slider panel
 class CustomColorSliderPanel extends JPanel {
     // JPanel with rgb sliders
-    JPanel rgbSliders = new JPanel();
-    JSlider rSlider = new JSlider(0, 255, 128);
-    JSlider gSlider = new JSlider(0, 255, 128);
-    JSlider bSlider = new JSlider(0, 255, 128);
+    private JPanel rgbSliders = new JPanel();
+    private JSlider rSlider = new JSlider(0, 255, 128);
+    private JSlider gSlider = new JSlider(0, 255, 128);
+    private JSlider bSlider = new JSlider(0, 255, 128);
     // JPanel with canvas and button
-    JPanel colorPanel = new JPanel();
+    private JPanel colorPanel = new JPanel();
     // Canvas to show color
-    ColorDisplay colorDisplay = new ColorDisplay();
+    private ColorDisplay colorDisplay = new ColorDisplay();
     // JButton to apply color to canvas
-    JButton apply = new JButton("Apply");
-    int r = 128; 
-    int g = 128; 
-    int b = 128;
+    private JButton apply = new JButton("Apply");
+    private int r = 128; 
+    private int g = 128; 
+    private int b = 128;
 
     public CustomColorSliderPanel() {
         setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
         setPanels();
-        addComponents();
+        addPanelComponents();
         add(rgbSliders);
         add(colorPanel);
         colorDisplay.setBackgroundColor();
@@ -559,8 +570,8 @@ class CustomColorSliderPanel extends JPanel {
         colorPanel.setLayout(new BoxLayout(colorPanel, BoxLayout.Y_AXIS));
     }
 
-    // adds rgb sliders
-    public void addComponents() {
+    // adds panel components: rgb sliders, canvas, and button
+    public void addPanelComponents() {
         setRGBSliders();
         addListeners();
         rgbSliders.add(rSlider);
@@ -577,15 +588,15 @@ class CustomColorSliderPanel extends JPanel {
         Hashtable<Integer, JLabel> rgbLabels = new Hashtable<>();
         rgbLabels.put(0, new JLabel("0"));
         rgbLabels.put(255, new JLabel("255"));
-        TerrainGUI.initSlider(rSlider, "Red", rgbLabels);
-        TerrainGUI.initSlider(gSlider, "Green", rgbLabels);
-        TerrainGUI.initSlider(bSlider, "Blue", rgbLabels);
+        TerrainGUI.setSlider(rSlider, "Red", rgbLabels);
+        TerrainGUI.setSlider(gSlider, "Green", rgbLabels);
+        TerrainGUI.setSlider(bSlider, "Blue", rgbLabels);
         rSlider.setPreferredSize(new Dimension(200, 70));
         gSlider.setPreferredSize(new Dimension(200, 70));
         bSlider.setPreferredSize(new Dimension(200, 70));
     }
 
-    // adds rgb listeners
+    // adds listeners
     public void addListeners() {
         rSlider.addChangeListener(ce -> {
             int rVal = rSlider.getValue();
