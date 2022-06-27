@@ -1,30 +1,30 @@
 ## Terrain-Map
 ### Project Description
-This project provides a 3D visualuation of three types of terrain generation algorithms: Midpoint Displacement, Diamond Square, and Perlin Noise. These stochastic algorithms generate [fractal landscapes] (https://en.wikipedia.org/wiki/Fractal_landscape) and simulates Brownian Motion (fractal Brownian motion in the case of Perlin Noise) in 3D. More information on these algorithms can be found in [Algorithms.java] (Algorithms.java).
+This project provides a 3D visualuation of three types of terrain generation algorithms: Midpoint Displacement, Diamond Square, and Perlin Noise. These stochastic algorithms generate [fractal landscapes](https://en.wikipedia.org/wiki/Fractal_landscape) and simulates Brownian Motion (fractal Brownian motion in the case of Perlin Noise) in 3D. More information on these algorithms can be found in [Algorithms.java](Algorithms.java).
 
-The primary process in generating terrain lies in applying the terrain generation algorithms on a 2D array (matrix) containing elements of type [Point] (Point.java), which represent a point in 3D space. The array is drawn to screen by projecting the points from 3D space to the XZ-plane. More information on effects and features implemented are below:
+The primary process in generating terrain lies in applying the terrain generation algorithms on a 2D array (matrix) containing elements of type [Point](Point.java), which represent a point in 3D space. The array is drawn to screen by projecting the points from 3D space to the XZ-plane. More information on effects and features implemented are below:
 
 ### Illusions and Effects
-- [One-point perspective] (Display.java) is applied to the matrix to give the terrain an illusion of depth
-- [Luminance] (Display.java) is achieved by setting a lower bound on rgb values of color to be set on terrain.
-- [Light direction and angle] (Display.java) is implemented by calculating the surface normal to a triangle made by three adjacent Points in the main Point[][] matrix and calculating the dot product between this normal and the light vector represented as a Point.
-- Rotation about the x and z axes is done by applying [rotation matrices] (Transform.java) on the main Point[][] matrix (Note: although only the x and z coordinates are diplayed on the screen, the hidden y-value is used in creating the rotation effect)
+- [One-point perspective](Display.java) is applied to the matrix to give the terrain an illusion of depth
+- [Luminance](Display.java) is achieved by setting a lower bound on rgb values of color to be set on terrain.
+- [Light direction and angle](Display.java) is implemented by calculating the surface normal to a triangle made by three adjacent Points in the main Point[][] matrix and calculating the dot product between this normal and the light vector represented as a Point.
+- Rotation about the x and z axes is done by applying [rotation matrices](Transform.java) on the main Point[][] matrix (Note: although only the x and z coordinates are diplayed on the screen, the hidden y-value is used in creating the rotation effect)
 
 ### Example Runs
 Here are some examples runs for each algorithm:
 #### Midpoint Displacement
-![](/example/midpointDisplacement.png "Midpoint Displacement example")
+![](/example/midpointDisplacement.png "Midpoint Displacement example run")
 #### Diamond Square
-![](/example/diamondSquare.png "Diamond Square example")
+![](/example/diamondSquare.png "Diamond Square example run")
 #### Perlin Noise
-![](/example/perlinNoise.png "Perlin Noise example")
+![](/example/perlinNoise.png "Perlin Noise example run")
 
 ### Before Running the Program
 #### Note
 Running a large-sized terrain map may cause some animation and drawing delay. Typically, a size of 7 or below (can be set in the GUI) is recommended.
 
 #### Prerequisites
-This project implements the [StdDraw library] (https://introcs.cs.princeton.edu/java/stdlib/javadoc/StdDraw.html), a simple graphics library which uses built-in Java APIs like Java AWT and Swing. The [StdDraw.java] (StdDraw.java) file has been included already, but please ensure the Java Runtime Environment (JRE) is downloaded by installing the latest [Java SE Development Kit (JDK)] (https://www.oracle.com/java/technologies/downloads/). Additionally, ensure that [Git] (https://git-scm.com/downloads) has been installed.
+This project implements the [StdDraw library](https://introcs.cs.princeton.edu/java/stdlib/javadoc/StdDraw.html), a simple graphics library which uses built-in Java APIs like Java AWT and Swing. The [StdDraw.java](StdDraw.java) file has been included already, but please ensure the Java Runtime Environment (JRE) is downloaded by installing the latest [Java SE Development Kit (JDK)](https://www.oracle.com/java/technologies/downloads/). Additionally, ensure that [Git](https://git-scm.com/downloads) has been installed.
 
 NOTE: The StdDraw library has been slightly modified: StdDraw.init() was changed to add additional components other than the drawn terrain to main JFrame as well as change the frame title. Additionally, the static initializer has been removed to prevent multiple calls to init().
 
