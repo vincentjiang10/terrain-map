@@ -21,7 +21,7 @@ Here are some examples runs for each algorithm:
 
 ### Before Running the Program
 #### Note
-Running a large-sized terrain map may cause some animation and drawing delay. Typically, a size of 7 or below (can be set in the GUI) is recommended.
+Running a large-sized terrain map may cause some animation and drawing delay. Typically, a size of 7 or below (can be set in the GUI) is recommended. Additionally, to create contrast between the top and bottom surfaces of the map, set luminance to low and light angle to high in the GUI.
 
 #### Prerequisites
 This project implements the [StdDraw library](https://introcs.cs.princeton.edu/java/stdlib/javadoc/StdDraw.html), a simple graphics library which uses built-in Java APIs like Java AWT and Swing. The [StdDraw.java](StdDraw.java) file has been included already, but please ensure the Java Runtime Environment (JRE) is downloaded by installing the latest [Java SE Development Kit (JDK)](https://www.oracle.com/java/technologies/downloads/). Additionally, ensure that [Git](https://git-scm.com/downloads) has been installed.
