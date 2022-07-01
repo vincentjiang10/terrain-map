@@ -1,6 +1,6 @@
 ## Terrain-Map
 ### Project Description
-This project provides a 3D visualuation of three types of terrain generation algorithms: Midpoint Displacement, Diamond Square, and Perlin Noise. These stochastic algorithms generate [fractal landscapes](https://en.wikipedia.org/wiki/Fractal_landscape) and simulates Brownian Motion (fractal Brownian motion in the case of Perlin Noise) in 3D. More information on these algorithms can be found in [Algorithms.java](Algorithms.java).
+This project provides a 3D visualuation of three types of terrain generation algorithms: Midpoint Displacement, Diamond Square, and Perlin Noise. These stochastic algorithms generate [fractal landscapes](https://en.wikipedia.org/wiki/Fractal_landscape) and simulates Brownian motion (fractal Brownian motion in the case of Perlin Noise) in 3D. More information on these algorithms can be found in [Algorithms.java](Algorithms.java).
 
 The primary process in generating terrain lies in applying the terrain generation algorithms on a 2D array (matrix) containing elements of type [Point](Point.java), which represent a point in 3D space. The array is drawn to screen by projecting the points from 3D space to the XZ-plane. More information on effects and features implemented are below:
 
@@ -21,7 +21,7 @@ Here are some examples runs for each algorithm:
 
 ### Before Running the Program
 #### Note
-Running a large-sized terrain map may cause some animation and drawing delay. Typically, a size of 7 or below (can be set in the GUI) is recommended. Additionally, to create contrast between the top and bottom surfaces of the map, set luminance to low and light angle to high in the GUI.
+Running a large-sized terrain map may cause some animation and drawing delay. Typically, a *size* of 7 or below (can be set in the GUI) is recommended. Additionally, to create contrast between the top and bottom surfaces of the map, set *luminance* to low and *light angle* to high in the GUI.
 
 #### Prerequisites
 This project implements the [StdDraw library](https://introcs.cs.princeton.edu/java/stdlib/javadoc/StdDraw.html), a simple graphics library which uses built-in Java APIs like Java AWT and Swing. The [StdDraw.java](StdDraw.java) file has been included already, but please ensure the Java Runtime Environment (JRE) is downloaded by installing the latest [Java SE Development Kit (JDK)](https://www.oracle.com/java/technologies/downloads/). Additionally, ensure that [Git](https://git-scm.com/downloads) has been installed.
