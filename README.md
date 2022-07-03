@@ -1,4 +1,4 @@
-## Terrain-Map
+## Terrain Map
 ### Project Description
 This project provides a 3D visualuation of three types of terrain generation algorithms: Midpoint Displacement, Diamond Square, and Perlin Noise. These stochastic algorithms generate [fractal landscapes](https://en.wikipedia.org/wiki/Fractal_landscape) and simulates Brownian motion (fractal Brownian motion in the case of Perlin Noise) in 3D. More information on these algorithms can be found in [Algorithms.java](Algorithms.java).
 
